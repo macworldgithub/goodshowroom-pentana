@@ -1,0 +1,3 @@
+'use client';
+import { Button, Icon, Panel } from '@/components/ui';
+export default function ErrorState({ reset }: { error: Error; reset: () => void }) { return <Panel><div className="grid min-h-96 place-items-center p-8 text-center"><div><span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-rose-50 text-rose-700"><Icon name="warning"/></span><h1 className="mt-4 text-xl font-bold text-slate-950">This screen could not be loaded</h1><p className="mt-2 text-sm text-slate-500">Your data is safe. Try loading the screen again.</p><Button className="mt-5" onClick={reset}>Try again</Button></div></div></Panel>; }

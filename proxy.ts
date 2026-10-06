@@ -18,10 +18,11 @@ export async function proxy(request: NextRequest) {
   });
   const { data: { user } } = await supabase.auth.getUser();
   const isLogin = request.nextUrl.pathname === '/login';
-  const isDashboard = request.nextUrl.pathname.startsWith('/dashboard');
-  if (!user && isDashboard) return NextResponse.redirect(new URL('/login', request.url));
+  const workspaceRoutes = ['/dashboard', '/leads', '/customers', '/pipeline', '/stock', '/deliveries', '/service', '/imports', '/reports', '/settings'];
+  const isWorkspace = workspaceRoutes.some((route) => request.nextUrl.pathname.startsWith(route));
+  if (!user && isWorkspace) return NextResponse.redirect(new URL('/login', request.url));
   if (user && isLogin) return NextResponse.redirect(new URL('/dashboard', request.url));
   return response;
 }
 
-export const config = { matcher: ['/dashboard/:path*', '/login', '/auth/:path*'] };
+export const config = { matcher: ['/dashboard/:path*', '/leads/:path*', '/customers/:path*', '/pipeline/:path*', '/stock/:path*', '/deliveries/:path*', '/service/:path*', '/imports/:path*', '/reports/:path*', '/settings/:path*', '/login', '/auth/:path*'] };
