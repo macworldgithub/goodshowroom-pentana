@@ -64,13 +64,14 @@ const permissions = [
     Service: true,
   },
   {
-    label: "View stock and deliveries",
+    label: "Match and reserve stock",
     Admin: true,
     Sales: true,
     Service: false,
   },
+  { label: "Manage shared handovers", Admin: true, Sales: true, Service: true },
   {
-    label: "Run and review imports",
+    label: "Review and retry sync failures",
     Admin: true,
     Sales: false,
     Service: false,
@@ -242,12 +243,12 @@ export function SettingsView() {
           </div>
         )}
         {tab === "audit" && (
-          <div className="divide-y divide-slate-100">
+          <div><div className="flex flex-col justify-between gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center"><p className="text-sm text-slate-600">Seven-year franchise audit retention · filterable by user, site, brand and command id.</p><Button variant="secondary" onClick={() => setNotice("Audit export prepared for the selected retention period.")}>Export audit</Button></div><div className="divide-y divide-slate-100">
             {[
-              ["Alex Morgan imported customer data", "Today, 6:02 am", "Admin"],
-              ["Maya Chen changed a CRM stage", "Today, 9:44 am", "Sales"],
+              ["Alex Morgan retried Pentana command CMD-8842", "Today, 9:46 am", "Admin"],
+              ["Maya Chen advanced a deal to Quote", "Today, 9:44 am", "Sales"],
               [
-                "Priya Nair created a booking request",
+                "Priya Nair moved a Pentana appointment",
                 "Yesterday, 4:31 pm",
                 "Service",
               ],
@@ -264,7 +265,7 @@ export function SettingsView() {
                 <span className="text-xs text-slate-400">{time}</span>
               </div>
             ))}
-          </div>
+          </div></div>
         )}
       </Panel>
       <Modal

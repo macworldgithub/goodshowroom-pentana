@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "Good Showroom CRM", template: "%s · Good Showroom" },
+  title: { default: "Good Showroom · Pentana Operating Layer", template: "%s · Good Showroom" },
   description:
     "Customer relationships, sales follow-ups and dealership coordination in one clear workspace.",
 };

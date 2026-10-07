@@ -49,18 +49,18 @@ export function StockView() {
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSelected(null);
-    setNotice("Reservation request logged for manual confirmation in Pentana.");
+    setNotice("Stock command accepted by Pentana and recorded on the customer thread.");
   }
   return (
     <>
       <PageHeader
-        eyebrow="Imported inventory"
-        title="Stock browser"
-        description="Browse the latest Pentana snapshot and match vehicles to customer interest."
+        eyebrow="Sales desk"
+        title="Stock match"
+        description="Search Pentana inventory, match a vehicle to an active deal, and reserve or release it with audited write-back."
         actions={
           <Button variant="secondary">
             <Icon name="refresh" className="h-4 w-4" />
-            Snapshot: 6:00 am
+            Synced: just now
           </Button>
         }
       />
@@ -81,11 +81,10 @@ export function StockView() {
           />
           <div>
             <strong className="text-sm text-sky-900">
-              Availability is from the latest import
+              Pentana is the stock authority
             </strong>
             <p className="mt-1 text-sm text-sky-700">
-              Confirm in Pentana before promising a vehicle or completing a
-              reservation.
+              Availability updates near real time. Reserve and release commands show success only after Pentana accepts them.
             </p>
           </div>
         </div>
@@ -107,7 +106,7 @@ export function StockView() {
         <StatCard
           label="Matched interests"
           value="11"
-          detail="Open CRM opportunities"
+          detail="Open sales opportunities"
           icon="customers"
           tone="blue"
         />
@@ -196,9 +195,8 @@ export function StockView() {
                     <Button
                       className="px-3"
                       onClick={() => setSelected(v)}
-                      disabled={v.status === "Reserved in Pentana"}
                     >
-                      Match
+                      {v.status === "Reserved in Pentana" ? "Release" : "Match & reserve"}
                     </Button>
                   </div>
                 </div>
@@ -225,14 +223,14 @@ export function StockView() {
           </FormField>
           <FormField label="Action">
             <select className={inputClass}>
-              <option>Link as vehicle interest</option>
-              <option>Create reservation request</option>
+              <option>Link interest and reserve in Pentana</option>
+              <option>Link as vehicle interest only</option>
+              <option>Release Pentana reservation</option>
               <option>Arrange test drive</option>
             </select>
           </FormField>
-          <div className="rounded-lg bg-amber-50 p-3 text-sm leading-6 text-amber-800">
-            A reservation request is not a confirmed Pentana reservation. Staff
-            must verify the result in Pentana.
+          <div className="rounded-lg bg-sky-50 p-3 text-sm leading-6 text-sky-800">
+            The screen remains pending until Pentana accepts the command. Any rejection appears here and in Sync operations.
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setSelected(null)}>
@@ -256,11 +254,11 @@ const initialDeliveries = [
     reg: "FQX-41R",
     complete: [true, true, true, false, false],
     tasks: [
-      "Finance cleared",
-      "Vehicle detailed",
+      "PDI completed",
       "Accessories fitted",
+      "Vehicle detailed",
       "Handover documents",
-      "Customer orientation",
+      "First service booked",
     ],
   },
   {
@@ -272,11 +270,11 @@ const initialDeliveries = [
     reg: "Pending",
     complete: [true, true, false, false, false],
     tasks: [
-      "Finance cleared",
-      "Vehicle detailed",
+      "PDI completed",
       "Accessories fitted",
+      "Vehicle detailed",
       "Handover documents",
-      "Customer orientation",
+      "First service booked",
     ],
   },
   {
@@ -288,11 +286,11 @@ const initialDeliveries = [
     reg: "FVN-82M",
     complete: [true, false, false, false, false],
     tasks: [
-      "Finance cleared",
-      "Vehicle detailed",
+      "PDI completed",
       "Accessories fitted",
+      "Vehicle detailed",
       "Handover documents",
-      "Customer orientation",
+      "First service booked",
     ],
   },
 ];
@@ -323,9 +321,9 @@ export function DeliveriesView() {
   return (
     <>
       <PageHeader
-        eyebrow="Sales handover"
-        title="Delivery board"
-        description="Coordinate local handover tasks while keeping official delivery status in Pentana."
+        eyebrow="Sales + Service"
+        title="Handover lane"
+        description="Coordinate PDI, accessories, delivery promises and first-service booking around the same customer and vehicle."
         actions={
           <Button>
             <Icon name="plus" className="h-4 w-4" />
@@ -336,8 +334,7 @@ export function DeliveriesView() {
       <div className="mb-5 flex gap-3 rounded-lg border border-sky-200 bg-sky-50 p-4 text-sm text-sky-800">
         <Icon name="warning" className="h-5 w-5 shrink-0" />
         <p>
-          Completing this checklist records CRM work only. It is not proof that
-          delivery is completed in Pentana.
+          Sales and Service share this checklist. Pentana remains authoritative for the order and delivery status.
         </p>
       </div>
       {notice && (
@@ -447,7 +444,7 @@ export function DeliveriesView() {
             <Button
               onClick={() => {
                 setSelected(null);
-                setNotice("Checklist saved. Pentana status was not changed.");
+                setNotice("Handover checklist saved and visible to Sales and Service.");
               }}
             >
               Save checklist
@@ -470,13 +467,8 @@ export function ServiceView() {
       <PageHeader
         eyebrow="Service coordination"
         title="Service desk"
-        description="Coordinate customer updates from imported appointments and repair orders."
-        actions={
-          <Button onClick={() => setRequestOpen(true)}>
-            <Icon name="plus" className="h-4 w-4" />
-            Booking request
-          </Button>
-        }
+        description="Run the diary, check-in, repair-order stages, customer authority and collection with Pentana write-back."
+        actions={<><Button variant="secondary"><Icon name="clock" className="h-4 w-4" />Today / This week</Button><Button onClick={() => setRequestOpen(true)}><Icon name="plus" className="h-4 w-4" />New booking</Button></>}
       />
       <div className="mb-5 grid gap-4 sm:grid-cols-3">
         <StatCard
@@ -495,7 +487,7 @@ export function ServiceView() {
         <StatCard
           label="Ready to collect"
           value="3"
-          detail="Pentana snapshot status"
+          detail="Live Pentana status"
           icon="car"
           tone="green"
         />
@@ -509,9 +501,9 @@ export function ServiceView() {
         <div className="flex gap-1 overflow-x-auto border-b border-slate-100 px-4 pt-3">
           {(
             [
-              ["appointments", "Today’s appointments"],
-              ["repair", "Repair orders"],
-              ["requests", "Local requests"],
+              ["appointments", "Today’s diary"],
+              ["repair", "Repair order board"],
+              ["requests", "Write exceptions"],
             ] as const
           ).map(([key, label]) => (
             <button
@@ -532,7 +524,7 @@ export function ServiceView() {
                   <th className="px-5 py-3">Customer & vehicle</th>
                   <th className="px-5 py-3">Pentana status</th>
                   <th className="px-5 py-3">Advisor</th>
-                  <th className="px-5 py-3">Local next action</th>
+                  <th className="px-5 py-3">Next customer action</th>
                   <th></th>
                 </tr>
               </thead>
@@ -571,18 +563,12 @@ export function ServiceView() {
                     <td className="px-5 py-4 text-sm text-slate-700">
                       {item.localTask}
                     </td>
-                    <td className="px-5 py-4">
-                      <Button
-                        variant="ghost"
-                        className="px-2"
-                        onClick={() =>
-                          setNotice(
-                            `Customer update task completed for ${item.customer}.`,
-                          )
-                        }
-                      >
-                        Complete
+                    <td className="px-5 py-4"><div className="flex gap-1">
+                      <Button variant="ghost" className="px-2" onClick={() => setNotice(`${item.pentanaStatus === "Booked" ? "Booking confirmed" : item.pentanaStatus === "Checked in" ? "Repair order opened" : item.pentanaStatus === "Ready for collection" ? "Customer collected" : "No-show recovery queued"} for ${item.customer}; Pentana accepted the command.`)}>
+                        {item.pentanaStatus === "Booked" ? "Confirm" : item.pentanaStatus === "Checked in" ? "Open RO" : item.pentanaStatus === "Ready for collection" ? "Collect" : "Recover"}
                       </Button>
+                      {item.pentanaStatus === "Ready for collection" && <Button variant="ghost" className="px-2" onClick={() => setNotice(`Ready-for-collection message sent to ${item.customer} after the privacy check.`)}>Message</Button>}
+                    </div>
                     </td>
                   </tr>
                 ))}
@@ -597,7 +583,7 @@ export function ServiceView() {
                 id: "RO-89041",
                 customer: "Grace Wilson",
                 work: "Investigate brake vibration",
-                state: "Awaiting diagnosis",
+                state: "Waiting authority",
               },
               {
                 id: "RO-89032",
@@ -605,6 +591,9 @@ export function ServiceView() {
                 work: "30,000 km scheduled service",
                 state: "Ready for collection",
               },
+              { id: "RO-89028", customer: "Ava Scott", work: "Air-conditioning diagnosis", state: "In workshop" },
+              { id: "RO-89017", customer: "Lucas King", work: "Replace front brake pads", state: "Waiting parts" },
+              { id: "RO-88994", customer: "Mason Hall", work: "Annual service completed", state: "Invoiced" },
             ].map((ro) => (
               <div
                 className="rounded-xl border border-slate-200 p-4"
@@ -619,8 +608,9 @@ export function ServiceView() {
                 <h3 className="mt-4 font-bold text-slate-900">{ro.customer}</h3>
                 <p className="mt-1 text-sm text-slate-500">{ro.work}</p>
                 <p className="mt-4 text-xs text-slate-400">
-                  Imported today at 6:00 am
+                  Live from Pentana · parts and financial lines are read only
                 </p>
+                <div className="mt-4 flex flex-wrap gap-2"><Button className="px-3" onClick={() => setNotice(`${ro.id} advanced in Pentana and added to the customer thread.`)}>Advance status</Button><Button variant="secondary" className="px-3" onClick={() => setNotice(`Customer update drafted from ${ro.id}. Review it on the thread before sending.`)}>Update customer</Button></div>
               </div>
             ))}
           </div>
@@ -628,11 +618,11 @@ export function ServiceView() {
         {tab === "requests" && (
           <EmptyState
             icon="clock"
-            title="No open local requests"
-            description="Booking and rescheduling requests will appear here until staff confirm the outcome in Pentana."
+            title="No unresolved write exceptions"
+            description="Rejected booking, check-in and repair-order commands appear here with Pentana’s reason and a retry action."
             action={
               <Button onClick={() => setRequestOpen(true)}>
-                Create request
+                Create booking
               </Button>
             }
           />
@@ -641,14 +631,14 @@ export function ServiceView() {
       <Modal
         open={requestOpen}
         onClose={() => setRequestOpen(false)}
-        title="Create booking request"
-        description="This will not create or change a Pentana appointment."
+        title="Create or update a booking"
+        description="This command creates, moves, confirms or cancels the Pentana appointment after capacity validation."
       >
         <ModalForm
           onSubmit={(e) => {
             e.preventDefault();
             setRequestOpen(false);
-            setNotice("Booking request saved for manual Pentana confirmation.");
+            setNotice("Booking accepted by Pentana and added to the customer thread.");
           }}
         >
           <FormField label="Customer">
@@ -662,14 +652,16 @@ export function ServiceView() {
             <FormField label="Preferred date">
               <input required type="date" className={inputClass} />
             </FormField>
-            <FormField label="Request type">
+            <FormField label="Command">
               <select className={inputClass}>
                 <option>New booking</option>
-                <option>Reschedule</option>
+                <option>Move booking</option>
+                <option>Confirm booking</option>
                 <option>Cancel</option>
               </select>
             </FormField>
           </div>
+          <div className="grid gap-4 sm:grid-cols-3"><FormField label="Preferred time"><input required type="time" className={inputClass} /></FormField><FormField label="Advisor"><select className={inputClass}><option>Priya Nair</option><option>Sam Ortiz</option></select></FormField><FormField label="Loan car"><select className={inputClass}><option>Not required</option><option>Required</option><option>Allocated · LC-07</option></select></FormField></div>
           <FormField label="Customer notes">
             <textarea
               className={`${inputClass} min-h-24 py-3`}
@@ -677,14 +669,13 @@ export function ServiceView() {
             />
           </FormField>
           <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-            Keep this request pending until Pentana has been checked and the
-            customer has been told the confirmed outcome.
+            Capacity rules are checked by Pentana. If the slot is rejected, the reason remains visible and no success is shown.
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setRequestOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit">Save request</Button>
+            <Button type="submit">Write to Pentana</Button>
           </div>
         </ModalForm>
       </Modal>

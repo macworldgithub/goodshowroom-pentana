@@ -1,6 +1,6 @@
 export type Tone = 'green' | 'amber' | 'red' | 'blue' | 'slate' | 'violet';
 
-export type LeadStage = 'New' | 'Contacted' | 'Qualified' | 'Proposal' | 'Won';
+export type LeadStage = 'New enquiry' | 'Contacted' | 'Appointment' | 'Appraisal' | 'Quote' | 'Order' | 'Awaiting delivery' | 'Delivered';
 
 export interface Customer {
   id: string;
@@ -16,7 +16,7 @@ export interface Customer {
   interest: string;
   lastContact: string;
   nextAction: string;
-  source: 'CRM' | 'Pentana import' | 'Website' | 'Phone';
+  source: 'Pentana' | 'Website' | 'Phone' | 'Email';
   consent: 'Confirmed' | 'Review needed' | 'Do not contact';
 }
 
@@ -53,6 +53,6 @@ export interface ServiceAppointment {
   customer: string;
   vehicle: string;
   advisor: string;
-  pentanaStatus: 'Booked' | 'Checked in' | 'Ready for collection' | 'No show';
+  pentanaStatus: 'Booked' | 'Confirmed' | 'Arrived' | 'Checked in' | 'In progress' | 'Ready for collection' | 'Collected' | 'No show';
   localTask: string;
 }

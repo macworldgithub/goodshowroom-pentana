@@ -9,8 +9,8 @@ import { Icon } from "@/components/ui";
 const roleCopy: Record<UserRole, string> = {
   Sales: "Leads, follow-ups, pipeline, stock matching and delivery checklists",
   Service:
-    "Imported appointments and repair orders, customer updates and booking requests",
-  Admin: "Users, site access, CSV imports, permissions and audit history",
+    "Diary, check-in, repair orders, customer updates and handovers",
+  Admin: "Users, site and brand access, sync failures, permissions and audit",
 };
 
 export default function LoginPage() {
@@ -49,7 +49,7 @@ export default function LoginPage() {
       <div className="w-full max-w-lg">
         <header className="mb-5 text-center sm:mb-6">
           <span className="inline-flex max-w-full rounded-full border border-brand/30 bg-brand-soft px-3 py-1 text-[10px] font-black uppercase tracking-[.12em] text-brand min-[400px]:px-6 min-[400px]:text-[11px] min-[400px]:tracking-[.16em]">
-            Good Showroom · CRM-first workspace
+            Good Showroom · Pentana operating layer
           </span>
           <div className="mt-4 flex items-center justify-center gap-2">
             <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#0b111c] text-sm font-black text-white">
@@ -60,11 +60,10 @@ export default function LoginPage() {
             </strong>
           </div>
           <h1 className="mt-3 text-2xl font-black tracking-tight text-[#0d1930]">
-            Customer Relationship Portal
+            Sales &amp; Service Operating Workspace
           </h1>
           <p className="mt-1 text-sm text-slate-600">
-            Manage CRM-owned customer activity alongside imported Pentana
-            snapshots
+            Run the customer day in one place while Pentana remains the system of record
           </p>
         </header>
         <section className="rounded-[18px] border border-slate-200 bg-white p-4 shadow-[0_16px_45px_rgba(15,23,42,.10)] min-[400px]:p-6 sm:rounded-[22px] sm:p-8">
@@ -158,9 +157,9 @@ export default function LoginPage() {
           <div className="mt-6 flex flex-col gap-2 border-t border-slate-100 pt-5 text-[11px] font-semibold text-slate-500 min-[440px]:flex-row min-[440px]:items-center min-[440px]:justify-between">
             <span className="flex items-start gap-2">
               <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
-              Pentana data shown as imported snapshots
+              Pentana connected · writes are audited
             </span>
-            <span>CRM-first release · Multi-site</span>
+            <span>One customer · One thread</span>
           </div>
         </section>
       </div>

@@ -23,41 +23,41 @@ type NavItem = {
 const navigation: NavItem[] = [
   {
     href: "/dashboard",
-    label: "Dashboard",
+    label: "My Day",
     icon: "home",
     roles: ["Sales", "Service", "Admin"],
   },
   {
     href: "/leads",
-    label: "Leads",
+    label: "Sales enquiries",
     icon: "leads",
     count: 12,
     roles: ["Sales", "Admin"],
   },
   {
     href: "/customers",
-    label: "Customers",
+    label: "Customer 360",
     icon: "customers",
     roles: ["Sales", "Service", "Admin"],
   },
   {
     href: "/pipeline",
-    label: "Sales pipeline",
+    label: "Sales desk",
     icon: "pipeline",
     roles: ["Sales", "Admin"],
   },
   {
     href: "/stock",
-    label: "Vehicle stock",
+    label: "Stock match",
     icon: "car",
     roles: ["Sales", "Admin"],
   },
   {
     href: "/deliveries",
-    label: "Deliveries",
+    label: "Handover lane",
     icon: "delivery",
     count: 3,
-    roles: ["Sales", "Admin"],
+    roles: ["Sales", "Service", "Admin"],
   },
   {
     href: "/service",
@@ -72,7 +72,7 @@ const navigation: NavItem[] = [
     icon: "chart",
     roles: ["Sales", "Service", "Admin"],
   },
-  { href: "/imports", label: "Data imports", icon: "upload", roles: ["Admin"] },
+  { href: "/sync", label: "Sync operations", icon: "refresh", roles: ["Admin"] },
   {
     href: "/settings",
     label: "Administration",
@@ -82,14 +82,14 @@ const navigation: NavItem[] = [
 ];
 
 const pageNames: Record<string, string> = {
-  dashboard: "Operations Dashboard",
-  leads: "Lead Management",
-  customers: "Customer Records",
-  pipeline: "Sales Pipeline",
-  stock: "Vehicle Stock",
-  deliveries: "Delivery Operations",
+  dashboard: "My Day",
+  leads: "Sales Enquiries",
+  customers: "Customer 360",
+  pipeline: "Sales Desk",
+  stock: "Stock Match",
+  deliveries: "Handover Lane",
   service: "Service Desk",
-  imports: "Data Imports",
+  sync: "Sync Operations",
   reports: "Performance Reports",
   settings: "Administration",
 };
@@ -172,7 +172,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   Good Showroom
                 </strong>
                 <small className="mt-1 block text-[9px] font-bold uppercase tracking-[.18em] text-slate-400">
-                  Dealership CRM
+                  Pentana operating layer
                 </small>
               </span>
             </Link>
@@ -279,8 +279,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </span>
               </div>
               <p className="mt-0.5 hidden text-xs text-slate-500 sm:block">
-                Live dealership activity, CRM workflows and imported Pentana
-                visibility
+                Live Sales and Service work with Pentana write-back status
               </p>
             </div>
           </div>

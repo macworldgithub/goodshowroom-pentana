@@ -1,12 +1,12 @@
 import type { Customer, ServiceAppointment, Task, Vehicle } from './crm-types';
 
 export const customers: Customer[] = [
-  { id: 'C-1048', pentanaId: '00018492', name: 'Olivia Bennett', initials: 'OB', email: 'olivia.bennett@example.com', phone: '(02) 5550 0148', mobile: '0412 884 210', location: 'Parramatta', owner: 'Maya Chen', stage: 'Proposal', interest: '2025 Mazda CX-5 Akera', lastContact: 'Today, 9:42 am', nextAction: 'Confirm test drive', source: 'Website', consent: 'Confirmed' },
-  { id: 'C-1039', pentanaId: '00017731', name: 'Noah Williams', initials: 'NW', email: 'noah.williams@example.com', phone: '0433 706 229', location: 'North Sydney', owner: 'Daniel Reed', stage: 'Qualified', interest: '2024 Toyota RAV4 Cruiser', lastContact: 'Yesterday, 4:18 pm', nextAction: 'Send valuation estimate', source: 'Pentana import', consent: 'Review needed' },
+  { id: 'C-1048', pentanaId: '00018492', name: 'Olivia Bennett', initials: 'OB', email: 'olivia.bennett@example.com', phone: '(02) 5550 0148', mobile: '0412 884 210', location: 'Parramatta', owner: 'Maya Chen', stage: 'Quote', interest: '2025 Mazda CX-5 Akera', lastContact: 'Today, 9:42 am', nextAction: 'Confirm test drive', source: 'Website', consent: 'Confirmed' },
+  { id: 'C-1039', pentanaId: '00017731', name: 'Noah Williams', initials: 'NW', email: 'noah.williams@example.com', phone: '0433 706 229', location: 'North Sydney', owner: 'Daniel Reed', stage: 'Appraisal', interest: '2024 Toyota RAV4 Cruiser', lastContact: 'Yesterday, 4:18 pm', nextAction: 'Send valuation estimate', source: 'Pentana', consent: 'Review needed' },
   { id: 'C-1032', name: 'Amelia Singh', initials: 'AS', email: 'amelia.singh@example.com', phone: '0408 221 196', location: 'Chatswood', owner: 'Maya Chen', stage: 'Contacted', interest: '2025 Kia Sportage GT-Line', lastContact: 'Yesterday, 11:05 am', nextAction: 'Call after 2 pm', source: 'Phone', consent: 'Confirmed' },
-  { id: 'C-1025', pentanaId: '00016502', name: 'Ethan Walker', initials: 'EW', email: 'ethan.walker@example.com', phone: '0421 300 882', location: 'Parramatta', owner: 'Jordan Lee', stage: 'New', interest: 'Used Subaru Outback', lastContact: '2 days ago', nextAction: 'First contact attempt', source: 'Pentana import', consent: 'Do not contact' },
-  { id: 'C-1018', name: 'Sophie Martin', initials: 'SM', email: 'sophie.martin@example.com', phone: '0419 188 045', location: 'Parramatta', owner: 'Daniel Reed', stage: 'Won', interest: '2024 Hyundai Tucson', lastContact: '3 days ago', nextAction: 'Prepare delivery checklist', source: 'CRM', consent: 'Confirmed' },
-  { id: 'C-1007', pentanaId: '00015119', name: 'Jack Thompson', initials: 'JT', email: 'jack.thompson@example.com', phone: '0402 533 817', location: 'North Sydney', owner: 'Maya Chen', stage: 'Contacted', interest: '2025 Mazda 3 G25', lastContact: '5 days ago', nextAction: 'Follow up finance enquiry', source: 'Pentana import', consent: 'Confirmed' },
+  { id: 'C-1025', pentanaId: '00016502', name: 'Ethan Walker', initials: 'EW', email: 'ethan.walker@example.com', phone: '0421 300 882', location: 'Parramatta', owner: 'Jordan Lee', stage: 'New enquiry', interest: 'Used Subaru Outback', lastContact: '2 days ago', nextAction: 'First contact attempt', source: 'Pentana', consent: 'Do not contact' },
+  { id: 'C-1018', name: 'Sophie Martin', initials: 'SM', email: 'sophie.martin@example.com', phone: '0419 188 045', location: 'Parramatta', owner: 'Daniel Reed', stage: 'Awaiting delivery', interest: '2024 Hyundai Tucson', lastContact: '3 days ago', nextAction: 'Prepare delivery checklist', source: 'Email', consent: 'Confirmed' },
+  { id: 'C-1007', pentanaId: '00015119', name: 'Jack Thompson', initials: 'JT', email: 'jack.thompson@example.com', phone: '0402 533 817', location: 'North Sydney', owner: 'Maya Chen', stage: 'Appointment', interest: '2025 Mazda 3 G25', lastContact: '5 days ago', nextAction: 'Follow up finance enquiry', source: 'Pentana', consent: 'Confirmed' },
 ];
 
 export const initialTasks: Task[] = [
@@ -33,4 +33,4 @@ export const serviceAppointments: ServiceAppointment[] = [
   { id: 'A-4498', time: '2:30 pm', customer: 'Henry Young', vehicle: '2022 Hyundai i30 · ELY-62Q', advisor: 'Sam Ortiz', pentanaStatus: 'Ready for collection', localTask: 'Collection follow-up at 4:00 pm' },
 ];
 
-export const pipelineStages = ['New', 'Contacted', 'Qualified', 'Proposal', 'Won'] as const;
+export const pipelineStages = ['New enquiry', 'Contacted', 'Appointment', 'Appraisal', 'Quote', 'Order', 'Awaiting delivery', 'Delivered'] as const;

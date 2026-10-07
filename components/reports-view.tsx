@@ -17,9 +17,9 @@ export function ReportsView() {
   return (
     <>
       <PageHeader
-        eyebrow="Workspace performance"
-        title="Performance reports"
-        description="Monitor response times, follow-up health and operational workload across authorised sites."
+        eyebrow="Manager and principal view"
+        title="Cross-desk performance"
+        description="Monitor open deals, repair orders, unanswered customers and handover risk across authorised sites and brands."
         actions={
           <>
             <select className={`${inputClass} w-44`}>
@@ -45,29 +45,29 @@ export function ReportsView() {
       )}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          label="Lead response"
-          value="18m"
-          detail="6m faster than last month"
+          label="Open deals"
+          value="29"
+          detail="5 ageing past house rule"
           icon="clock"
         />
         <StatCard
-          label="Contact rate"
-          value="78%"
-          detail="Within first 24 hours"
+          label="Open repair orders"
+          value="18"
+          detail="3 awaiting authority"
           icon="phone"
           tone="blue"
         />
         <StatCard
-          label="Overdue follow-ups"
+          label="Unanswered customers"
           value="8"
-          detail="Across 4 team members"
+          detail="Across Sales and Service"
           icon="warning"
           tone="red"
         />
         <StatCard
-          label="CRM wins"
-          value="14"
-          detail="$684k pipeline value"
+          label="Handover risk"
+          value="3"
+          detail="PDI or first service missing"
           icon="chart"
           tone="green"
         />
