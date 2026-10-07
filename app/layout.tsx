@@ -1,9 +1,10 @@
-import type { Metadata } from 'next';
-import './globals.css';
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: 'Good Showroom CRM', template: '%s · Good Showroom' },
-  description: 'Customer relationships, sales follow-ups and dealership coordination in one clear workspace.',
+  title: { default: "Good Showroom CRM", template: "%s · Good Showroom" },
+  description:
+    "Customer relationships, sales follow-ups and dealership coordination in one clear workspace.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

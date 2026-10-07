@@ -1,10 +1,50 @@
 @import "tailwindcss";
 
-:root { --background: #f5f7fa; --foreground: #0d1930; }
+@theme {
+  --color-brand: #c9181e;
+  --color-brand-dark: #a51217;
+  --color-brand-soft: #fbe9ea;
+  --color-red-50: #fdf1f2;
+  --color-red-100: #fbe1e3;
+  --color-red-200: #f6bec1;
+  --color-red-300: #ee9297;
+  --color-red-400: #df555c;
+  --color-red-500: #c9181e;
+  --color-red-600: #c9181e;
+  --color-red-700: #a51217;
+  --color-red-800: #891217;
+  --color-red-900: #731419;
+  /* Legacy success/accent utilities now follow the red brand palette. */
+  --color-emerald-50: #fdf1f2;
+  --color-emerald-100: #fbe1e3;
+  --color-emerald-200: #f6bec1;
+  --color-emerald-300: #ee9297;
+  --color-emerald-400: #df555c;
+  --color-emerald-500: #c9181e;
+  --color-emerald-600: #c9181e;
+  --color-emerald-700: #a51217;
+  --color-emerald-800: #891217;
+  --color-emerald-900: #731419;
+}
+
+:root {
+  --background: #f5f7fa;
+  --foreground: #0d1930;
+  --brand: #c9181e;
+  --brand-dark: #a51217;
+}
 * { box-sizing: border-box; }
-html { min-height: 100%; background: var(--background); scroll-behavior: smooth; }
-body { min-height: 100vh; margin: 0; background: var(--background); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; font-size: 16px; }
+html { min-height: 100%; overflow-x: hidden; background: var(--background); scroll-behavior: smooth; }
+body { min-width: 320px; min-height: 100vh; margin: 0; overflow-x: hidden; background: var(--background); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; font-size: 16px; }
 button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgba(5, 150, 105, .22); outline-offset: 2px; }
-::selection { background: #fee2e2; color: #991b1b; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgba(201, 24, 30, .24); outline-offset: 2px; }
+::selection { background: #fbe9ea; color: #8f1116; }
+
+/* Wide data sets stay usable on narrow touch screens without breaking the page. */
+.overflow-x-auto { overscroll-behavior-inline: contain; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+
+@media (max-width: 639px) {
+  table th, table td { padding-left: 0.875rem !important; padding-right: 0.875rem !important; }
+  table { font-size: 0.875rem; }
+}
