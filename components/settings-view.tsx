@@ -70,6 +70,7 @@ const permissions = [
     Service: false,
   },
   { label: "Manage shared handovers", Admin: true, Sales: true, Service: true },
+  { label: "Run and review CSV imports", Admin: true, Sales: false, Service: false },
   {
     label: "Review and retry sync failures",
     Admin: true,
@@ -95,8 +96,8 @@ export function SettingsView() {
     <>
       <PageHeader
         eyebrow="Admin only"
-        title="Administration"
-        description="Manage users, the three workspace roles, site access and audit evidence."
+        title="Users & dealership settings"
+        description="Manage users, the three workspace roles, site and brand access, assignments and audit evidence. CSV imports are available from the Admin navigation."
         actions={
           <Button onClick={() => setInvite(true)}>
             <Icon name="plus" className="h-4 w-4" />

@@ -294,7 +294,23 @@ function ServiceDashboard() {
           tone="red"
         />
       </div>
-      <Link href="/deliveries" className="mt-5 flex flex-col justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 sm:flex-row sm:items-center"><span><strong className="text-sm text-red-900">Sales-to-Service handover</strong><span className="mt-1 block text-sm text-red-700">Sophie Martin delivers tomorrow: PDI complete, first-service booking still required.</span></span><span className="inline-flex items-center gap-1 text-sm font-bold text-brand">Open handover lane <Icon name="chevron" className="h-4 w-4" /></span></Link>
+      <Link
+        href="/deliveries"
+        className="mt-5 flex flex-col justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 sm:flex-row sm:items-center"
+      >
+        <span>
+          <strong className="text-sm text-red-900">
+            Sales-to-Service handover
+          </strong>
+          <span className="mt-1 block text-sm text-red-700">
+            Sophie Martin delivers tomorrow: PDI complete, first-service booking
+            still required.
+          </span>
+        </span>
+        <span className="inline-flex items-center gap-1 text-sm font-bold text-brand">
+          Open handover lane <Icon name="chevron" className="h-4 w-4" />
+        </span>
+      </Link>
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.45fr_.75fr]">
         <Panel>
           <PanelHeading
@@ -376,7 +392,8 @@ function ServiceDashboard() {
               </p>
               <strong className="mt-3 block">Live sync healthy</strong>
               <p className="mt-1 text-sm text-slate-400">
-                Allowed booking and repair-order status changes write back and are audited.
+                Allowed booking and repair-order status changes write back and
+                are audited.
               </p>
             </div>
           </Panel>
@@ -406,7 +423,11 @@ export function DashboardView() {
       <PageHeader
         eyebrow="Wednesday, 7 October"
         title={role === "Admin" ? "Group day at a glance" : "My Day"}
-        description={role === "Admin" ? "Open deals, repair orders, unanswered customers and handover risk across authorised sites." : "Appointments, promised contacts, deliveries and work queues in time order for Parramatta."}
+        description={
+          role === "Admin"
+            ? "Open deals, repair orders, unanswered customers and handover risk across authorised sites."
+            : "Appointments, promised contacts, deliveries and work queues in time order for Parramatta."
+        }
         actions={
           <>
             <Button variant="secondary" onClick={() => setTaskOpen(true)}>
@@ -459,13 +480,49 @@ export function DashboardView() {
         />
       </div>
       <Panel className="mt-5 overflow-hidden">
-        <PanelHeading title="Today’s run sheet" description="One click opens the shared customer thread—no second search required." />
+        <PanelHeading
+          title="Today’s run sheet"
+          description="One click opens the shared customer thread—no second search required."
+        />
         <div className="grid divide-y divide-slate-100 md:grid-cols-3 md:divide-x md:divide-y-0">
           {[
-            ["10:30 am", "Olivia Bennett", "Promised call · confirm test drive", "/customers/C-1048"],
-            ["2:30 pm", "Henry Young", "Service collection · vehicle ready", "/customers/C-1048"],
-            ["4:30 pm", "Sophie Martin", "Handover · PDI and first service check", "/customers/C-1018"],
-          ].map(([time, customer, action, href]) => <Link href={href} key={`${time}-${customer}`} className="flex gap-3 p-4 hover:bg-red-50"><span className="shrink-0 text-xs font-black text-brand">{time}</span><span className="min-w-0"><strong className="block text-sm text-slate-900">{customer}</strong><span className="mt-1 block text-xs leading-5 text-slate-500">{action}</span></span></Link>)}
+            [
+              "10:30 am",
+              "Olivia Bennett",
+              "Promised call · confirm test drive",
+              "/customers/C-1048",
+            ],
+            [
+              "2:30 pm",
+              "Henry Young",
+              "Service collection · vehicle ready",
+              "/customers/C-1048",
+            ],
+            [
+              "4:30 pm",
+              "Sophie Martin",
+              "Handover · PDI and first service check",
+              "/customers/C-1018",
+            ],
+          ].map(([time, customer, action, href]) => (
+            <Link
+              href={href}
+              key={`${time}-${customer}`}
+              className="flex gap-3 p-4 hover:bg-red-50"
+            >
+              <span className="shrink-0 text-xs font-black text-brand">
+                {time}
+              </span>
+              <span className="min-w-0">
+                <strong className="block text-sm text-slate-900">
+                  {customer}
+                </strong>
+                <span className="mt-1 block text-xs leading-5 text-slate-500">
+                  {action}
+                </span>
+              </span>
+            </Link>
+          ))}
         </div>
       </Panel>
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.55fr_.85fr]">
@@ -621,6 +678,7 @@ export function DashboardView() {
 }
 
 export function LeadsView() {
+  const role = useWorkspaceRole();
   const [list, setList] = useState(customers);
   const [search, setSearch] = useState("");
   const [stage, setStage] = useState("All stages");
@@ -734,7 +792,7 @@ export function LeadsView() {
                       {c.interest}
                     </td>
                     <td className="px-5 py-4 text-sm text-slate-600">
-                      {c.owner}
+                      {role === "Admin" ? <select aria-label={`Assign ${c.name}`} value={c.owner} onChange={(event) => { const owner = event.target.value; setList((items) => items.map((item) => item.id === c.id ? { ...item, owner } : item)); setNotice(`${c.name} assigned to ${owner}.`); }} className="h-9 rounded-lg border border-slate-300 bg-white px-2 text-xs font-semibold"><option>Maya Chen</option><option>Daniel Reed</option><option>Jordan Lee</option><option>Unassigned</option></select> : c.owner}
                     </td>
                     <td className="px-5 py-4">
                       <p className="text-sm font-medium text-slate-800">
@@ -771,6 +829,7 @@ export function LeadsView() {
 }
 
 export function CustomersView() {
+  const role = useWorkspaceRole();
   const [search, setSearch] = useState("");
   const [source, setSource] = useState("All sources");
   const [open, setOpen] = useState(false);
@@ -779,24 +838,25 @@ export function CustomersView() {
     () =>
       list.filter(
         (c) =>
+          (role === "Admin" || (role === "Sales" ? c.owner === "Maya Chen" : Boolean(c.pentanaId))) &&
           (source === "All sources" || c.source === source) &&
           `${c.name} ${c.email} ${c.phone} ${c.pentanaId}`
             .toLowerCase()
             .includes(search.toLowerCase()),
       ),
-    [list, search, source],
+    [list, role, search, source],
   );
   return (
     <>
       <PageHeader
-        eyebrow="Customer book"
-        title="Customers"
-        description="One shared Pentana-backed customer identity, vehicle history and Sales-and-Service thread."
+        eyebrow={role === "Admin" ? "Sales + Service records" : role === "Sales" ? "Assigned customer book" : "Service customer book"}
+        title={role === "Admin" ? "All customers" : role === "Sales" ? "Assigned customers" : "Service customers"}
+        description={role === "Admin" ? "Access authorised Sales and Service records, assignments and the shared customer thread." : role === "Sales" ? "Manage your assigned customers, conversations, follow-ups and opportunities." : "Manage service customers, booking conversations, repair-order updates and handovers."}
         actions={
-          <Button onClick={() => setOpen(true)}>
+          role !== "Service" ? <Button onClick={() => setOpen(true)}>
             <Icon name="plus" className="h-4 w-4" />
             Add customer
-          </Button>
+          </Button> : undefined
         }
       />
       <Panel>
@@ -852,9 +912,7 @@ export function CustomersView() {
                     <span className="text-xs text-slate-500">{c.phone}</span>
                   </td>
                   <td className="px-5 py-4">
-                    <Badge
-                      tone={c.source === "Pentana" ? "blue" : "slate"}
-                    >
+                    <Badge tone={c.source === "Pentana" ? "blue" : "slate"}>
                       {c.source}
                     </Badge>
                   </td>
@@ -932,7 +990,8 @@ export function PipelineView() {
       )}
       <div className="mb-4 flex items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
         <Icon name="refresh" className="h-4 w-4 shrink-0" />
-        Pentana owns deal status and commercial totals. Good Showroom sends audited stage commands and shows any rejection.
+        Pentana owns deal status and commercial totals. Good Showroom sends
+        audited stage commands and shows any rejection.
       </div>
       <div className="flex gap-4 overflow-x-auto pb-4">
         {pipelineStages.map((stage) => {
@@ -974,7 +1033,34 @@ export function PipelineView() {
                     <p className="mt-4 text-sm font-medium text-slate-800">
                       {c.interest}
                     </p>
-                    <div className="mt-3 grid grid-cols-2 gap-2 rounded-lg bg-slate-50 p-3 text-xs"><div><span className="text-slate-400">Price summary</span><strong className="mt-1 block text-slate-700">From Pentana</strong></div><div><span className="text-slate-400">Trade</span><strong className="mt-1 block text-slate-700">{c.stage === "Appraisal" ? "In review" : "None"}</strong></div><div><span className="text-slate-400">Salesperson</span><strong className="mt-1 block text-slate-700">{c.owner}</strong></div><div><span className="text-slate-400">Expected delivery</span><strong className="mt-1 block text-slate-700">{c.stage === "Awaiting delivery" ? "8 Oct" : "—"}</strong></div></div>
+                    <div className="mt-3 grid grid-cols-2 gap-2 rounded-lg bg-slate-50 p-3 text-xs">
+                      <div>
+                        <span className="text-slate-400">Price summary</span>
+                        <strong className="mt-1 block text-slate-700">
+                          From Pentana
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">Trade</span>
+                        <strong className="mt-1 block text-slate-700">
+                          {c.stage === "Appraisal" ? "In review" : "None"}
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">Salesperson</span>
+                        <strong className="mt-1 block text-slate-700">
+                          {c.owner}
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">
+                          Expected delivery
+                        </span>
+                        <strong className="mt-1 block text-slate-700">
+                          {c.stage === "Awaiting delivery" ? "8 Oct" : "—"}
+                        </strong>
+                      </div>
+                    </div>
                     <div className="mt-4 border-t border-slate-100 pt-3">
                       <p className="text-xs text-slate-400">NEXT ACTION</p>
                       <p className="mt-1 text-sm text-slate-600">
@@ -986,7 +1072,11 @@ export function PipelineView() {
                         onClick={() => advance(c)}
                         className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg bg-slate-50 py-2 text-xs font-bold text-slate-600 hover:bg-emerald-50 hover:text-emerald-800"
                       >
-                        {c.stage === "Appointment" ? "Request appraisal" : c.stage === "Appraisal" ? "Record result & quote" : "Log activity & move"}{" "}
+                        {c.stage === "Appointment"
+                          ? "Request appraisal"
+                          : c.stage === "Appraisal"
+                            ? "Record result & quote"
+                            : "Log activity & move"}{" "}
                         <Icon name="chevron" className="h-3.5 w-3.5" />
                       </button>
                     )}
@@ -1008,11 +1098,15 @@ export function PipelineView() {
 
 export function CustomerDetailView({ id }: { id: string }) {
   const customer = customers.find((item) => item.id === id) ?? customers[0];
-  const [tab, setTab] = useState<"all" | "sales" | "service" | "messages" | "tasks" | "vehicles" | "audit">("all");
+  const [tab, setTab] = useState<
+    "all" | "sales" | "service" | "messages" | "tasks" | "vehicles" | "audit"
+  >("all");
   const [noteOpen, setNoteOpen] = useState(false);
   const [taskOpen, setTaskOpen] = useState(false);
   const [notice, setNotice] = useState("");
-  const [channel, setChannel] = useState<"SMS" | "Email" | "Call outcome">("SMS");
+  const [channel, setChannel] = useState<"SMS" | "Email" | "Call outcome">(
+    "SMS",
+  );
   const [message, setMessage] = useState("");
   const [notes, setNotes] = useState([
     {
@@ -1031,7 +1125,9 @@ export function CustomerDetailView({ id }: { id: string }) {
       ...all,
     ]);
     setNoteOpen(false);
-    setNotice("Internal note saved and the activity write-back was accepted by Pentana.");
+    setNotice(
+      "Internal note saved and the activity write-back was accepted by Pentana.",
+    );
   }
   return (
     <>
@@ -1118,7 +1214,11 @@ export function CustomerDetailView({ id }: { id: string }) {
           {tab !== "tasks" && tab !== "vehicles" && tab !== "audit" && (
             <Panel>
               <PanelHeading
-                title={tab === "all" ? "Unified customer thread" : `${tab[0].toUpperCase()}${tab.slice(1)} events`}
+                title={
+                  tab === "all"
+                    ? "Unified customer thread"
+                    : `${tab[0].toUpperCase()}${tab.slice(1)} events`
+                }
                 description="Sales, Service, messages, tasks and Pentana events in one audited timeline."
               />
               <div className="p-5">
@@ -1150,7 +1250,8 @@ export function CustomerDetailView({ id }: { id: string }) {
                       </span>
                     </div>
                     <p className="mt-1 text-sm text-slate-600">
-                      Vehicle options and brochure sent by Maya after consent was checked.
+                      Vehicle options and brochure sent by Maya after consent
+                      was checked.
                     </p>
                   </div>
                   <div className="relative">
@@ -1164,15 +1265,80 @@ export function CustomerDetailView({ id }: { id: string }) {
                       </span>
                     </div>
                     <p className="mt-1 text-sm text-slate-600">
-                      Appraisal → Quote by Maya Chen. Pentana accepted the update.
+                      Appraisal → Quote by Maya Chen. Pentana accepted the
+                      update.
                     </p>
                   </div>
                 </div>
               </div>
-              <form className="border-t border-slate-100 p-4 sm:p-5" onSubmit={(event) => { event.preventDefault(); if (!message.trim() || customer.consent === "Do not contact") return; setNotice(`${channel} sent after privacy check and logged against the Pentana activity.`); setMessage(""); }}>
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div className="flex gap-2">{(["SMS", "Email", "Call outcome"] as const).map((item) => <button type="button" key={item} onClick={() => setChannel(item)} className={`rounded-lg px-3 py-2 text-xs font-bold ${channel === item ? "bg-brand text-white" : "bg-slate-100 text-slate-600"}`}>{item}</button>)}</div><Button type="button" variant="secondary" className="px-3" onClick={() => setMessage("Hi Olivia, I’ve checked the latest update and your Saturday test drive is ready to confirm. Would 10:30 am suit?")}>AI draft</Button></div>
-                <textarea value={message} onChange={(event) => setMessage(event.target.value)} disabled={customer.consent === "Do not contact"} className={`${inputClass} min-h-28 py-3 disabled:bg-slate-100`} placeholder={channel === "Call outcome" ? "Log the call outcome and next promise" : `Write a customer-visible ${channel} message`} />
-                <div className="mt-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><p className={`text-xs ${customer.consent === "Do not contact" ? "font-bold text-red-700" : "text-slate-500"}`}>{customer.consent === "Do not contact" ? "Messaging blocked by the Pentana do-not-contact flag." : "Privacy checked · A person must review and send every AI draft."}</p><Button type="submit" disabled={!message.trim() || customer.consent === "Do not contact"}>{channel === "Call outcome" ? "Log outcome" : `Send ${channel}`}</Button></div>
+              <form
+                className="border-t border-slate-100 p-4 sm:p-5"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (!message.trim() || customer.consent === "Do not contact")
+                    return;
+                  setNotice(
+                    `${channel} sent after privacy check and logged against the Pentana activity.`,
+                  );
+                  setMessage("");
+                }}
+              >
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex gap-2">
+                    {(["SMS", "Email", "Call outcome"] as const).map((item) => (
+                      <button
+                        type="button"
+                        key={item}
+                        onClick={() => setChannel(item)}
+                        className={`rounded-lg px-3 py-2 text-xs font-bold ${channel === item ? "bg-brand text-white" : "bg-slate-100 text-slate-600"}`}
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="px-3"
+                    onClick={() =>
+                      setMessage(
+                        "Hi Olivia, I’ve checked the latest update and your Saturday test drive is ready to confirm. Would 10:30 am suit?",
+                      )
+                    }
+                  >
+                    AI draft
+                  </Button>
+                </div>
+                <textarea
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                  disabled={customer.consent === "Do not contact"}
+                  className={`${inputClass} min-h-28 py-3 disabled:bg-slate-100`}
+                  placeholder={
+                    channel === "Call outcome"
+                      ? "Log the call outcome and next promise"
+                      : `Write a customer-visible ${channel} message`
+                  }
+                />
+                <div className="mt-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                  <p
+                    className={`text-xs ${customer.consent === "Do not contact" ? "font-bold text-red-700" : "text-slate-500"}`}
+                  >
+                    {customer.consent === "Do not contact"
+                      ? "Messaging blocked by the Pentana do-not-contact flag."
+                      : "Privacy checked · A person must review and send every AI draft."}
+                  </p>
+                  <Button
+                    type="submit"
+                    disabled={
+                      !message.trim() || customer.consent === "Do not contact"
+                    }
+                  >
+                    {channel === "Call outcome"
+                      ? "Log outcome"
+                      : `Send ${channel}`}
+                  </Button>
+                </div>
               </form>
             </Panel>
           )}
@@ -1275,12 +1441,18 @@ export function CustomerDetailView({ id }: { id: string }) {
                 <p className="mt-1 text-sm text-slate-700">{customer.phone}</p>
               </div>
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Household / company</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Household / company
+                </span>
                 <p className="mt-1 text-sm text-slate-700">Bennett household</p>
               </div>
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Sites</span>
-                <p className="mt-1 text-sm text-slate-700">{customer.location} · Mazda</p>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Sites
+                </span>
+                <p className="mt-1 text-sm text-slate-700">
+                  {customer.location} · Mazda
+                </p>
               </div>
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -1304,7 +1476,36 @@ export function CustomerDetailView({ id }: { id: string }) {
           </Panel>
           <Panel>
             <PanelHeading title="Vehicles" />
-            <div className="p-5"><Badge tone="green">Current deal unit</Badge><h3 className="mt-3 text-sm font-bold text-slate-900">{customer.interest}</h3><dl className="mt-3 grid grid-cols-2 gap-3 text-xs"><div><dt className="text-slate-400">Registration</dt><dd className="mt-1 font-semibold text-slate-700">FQX-41R</dd></div><div><dt className="text-slate-400">VIN</dt><dd className="mt-1 font-semibold text-slate-700">…7M04218</dd></div><div><dt className="text-slate-400">Next service</dt><dd className="mt-1 font-semibold text-slate-700">18 Nov 2026</dd></div><div><dt className="text-slate-400">Campaigns</dt><dd className="mt-1 font-semibold text-slate-700">None open</dd></div></dl></div>
+            <div className="p-5">
+              <Badge tone="green">Current deal unit</Badge>
+              <h3 className="mt-3 text-sm font-bold text-slate-900">
+                {customer.interest}
+              </h3>
+              <dl className="mt-3 grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <dt className="text-slate-400">Registration</dt>
+                  <dd className="mt-1 font-semibold text-slate-700">FQX-41R</dd>
+                </div>
+                <div>
+                  <dt className="text-slate-400">VIN</dt>
+                  <dd className="mt-1 font-semibold text-slate-700">
+                    …7M04218
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-slate-400">Next service</dt>
+                  <dd className="mt-1 font-semibold text-slate-700">
+                    18 Nov 2026
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-slate-400">Campaigns</dt>
+                  <dd className="mt-1 font-semibold text-slate-700">
+                    None open
+                  </dd>
+                </div>
+              </dl>
+            </div>
           </Panel>
           <Panel>
             <PanelHeading title="Source & freshness" />
@@ -1317,7 +1518,8 @@ export function CustomerDetailView({ id }: { id: string }) {
                 Synced just now
               </strong>
               <p className="mt-3 text-xs leading-5 text-slate-500">
-                Pentana remains authoritative; this customer refreshes near real time while open.
+                Pentana remains authoritative; this customer refreshes near real
+                time while open.
               </p>
             </div>
           </Panel>
@@ -1326,10 +1528,27 @@ export function CustomerDetailView({ id }: { id: string }) {
             <div className="p-5">
               <p className="text-sm text-slate-600">Mobile number correction</p>
               <div className="mt-3 flex gap-2">
-                <Button variant="secondary" className="flex-1 px-2" onClick={() => setNotice("Mobile change opened for field-level conflict review.")}>
+                <Button
+                  variant="secondary"
+                  className="flex-1 px-2"
+                  onClick={() =>
+                    setNotice(
+                      "Mobile change opened for field-level conflict review.",
+                    )
+                  }
+                >
                   Review
                 </Button>
-                <Button className="flex-1 px-2" onClick={() => setNotice("Pentana accepted the mobile number update; audit evidence was retained.")}>Confirm</Button>
+                <Button
+                  className="flex-1 px-2"
+                  onClick={() =>
+                    setNotice(
+                      "Pentana accepted the mobile number update; audit evidence was retained.",
+                    )
+                  }
+                >
+                  Confirm
+                </Button>
               </div>
               <p className="mt-3 text-xs leading-5 text-slate-500">
                 Confirmation sends an audited contact-field update to Pentana.

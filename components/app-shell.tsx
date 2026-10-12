@@ -72,10 +72,11 @@ const navigation: NavItem[] = [
     icon: "chart",
     roles: ["Sales", "Service", "Admin"],
   },
+  { href: "/imports", label: "CSV imports", icon: "upload", roles: ["Admin"] },
   { href: "/sync", label: "Sync operations", icon: "refresh", roles: ["Admin"] },
   {
     href: "/settings",
-    label: "Administration",
+    label: "Dealership settings",
     icon: "settings",
     roles: ["Admin"],
   },
@@ -89,9 +90,10 @@ const pageNames: Record<string, string> = {
   stock: "Stock Match",
   deliveries: "Handover Lane",
   service: "Service Desk",
+  imports: "CSV Imports",
   sync: "Sync Operations",
   reports: "Performance Reports",
-  settings: "Administration",
+  settings: "Dealership Settings",
 };
 
 const RoleContext = createContext<UserRole>("Admin");

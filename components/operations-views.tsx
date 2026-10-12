@@ -467,8 +467,8 @@ export function ServiceView() {
       <PageHeader
         eyebrow="Service coordination"
         title="Service desk"
-        description="Run the diary, check-in, repair-order stages, customer authority and collection with Pentana write-back."
-        actions={<><Button variant="secondary"><Icon name="clock" className="h-4 w-4" />Today / This week</Button><Button onClick={() => setRequestOpen(true)}><Icon name="plus" className="h-4 w-4" />New booking</Button></>}
+        description="Manage service customers, booking requests, imported appointments and repair orders, customer updates and handover tasks."
+        actions={<><Button variant="secondary"><Icon name="clock" className="h-4 w-4" />Today / This week</Button><Button onClick={() => setRequestOpen(true)}><Icon name="plus" className="h-4 w-4" />Booking request</Button></>}
       />
       <div className="mb-5 grid gap-4 sm:grid-cols-3">
         <StatCard
@@ -622,7 +622,7 @@ export function ServiceView() {
             description="Rejected booking, check-in and repair-order commands appear here with Pentana’s reason and a retry action."
             action={
               <Button onClick={() => setRequestOpen(true)}>
-                Create booking
+                Create booking request
               </Button>
             }
           />
@@ -631,7 +631,7 @@ export function ServiceView() {
       <Modal
         open={requestOpen}
         onClose={() => setRequestOpen(false)}
-        title="Create or update a booking"
+        title="Create booking request"
         description="This command creates, moves, confirms or cancels the Pentana appointment after capacity validation."
       >
         <ModalForm

@@ -7,10 +7,10 @@ import { roles, type UserRole } from "@/lib/roles";
 import { Icon } from "@/components/ui";
 
 const roleCopy: Record<UserRole, string> = {
-  Sales: "Leads, follow-ups, pipeline, stock matching and delivery checklists",
+  Sales: "Leads, assigned customers, conversations, follow-ups, stock, opportunities and deliveries",
   Service:
-    "Diary, check-in, repair orders, customer updates and handovers",
-  Admin: "Users, site and brand access, sync failures, permissions and audit",
+    "Service customers, booking requests, imported appointments and repair orders, updates and handovers",
+  Admin: "Users, dealership settings, CSV imports, assignments and full record access",
 };
 
 export default function LoginPage() {
