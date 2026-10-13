@@ -1,6 +1,5 @@
 "use client";
 
-<<<<<<< Updated upstream
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -13,11 +12,6 @@ const roleCopy: Record<UserRole, string> = {
     "Service customers, booking requests, imported appointments and repair orders, updates and handovers",
   Admin: "Users, dealership settings, CSV imports, assignments and full record access",
 };
-=======
-import { useState, type FormEvent } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import Link from 'next/link';
->>>>>>> Stashed changes
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,7 +45,6 @@ export default function LoginPage() {
   }
 
   return (
-<<<<<<< Updated upstream
     <main className="grid min-h-[100dvh] place-items-center border-t-2 border-brand bg-[radial-gradient(circle_at_50%_35%,#fff_0%,#f8f6f7_42%,#f5f7fa_100%)] p-3 min-[400px]:p-4 sm:p-8">
       <div className="w-full max-w-lg">
         <header className="mb-5 text-center sm:mb-6">
@@ -170,25 +163,6 @@ export default function LoginPage() {
           </div>
         </section>
       </div>
-=======
-    <main className="login-shell">
-      <section className="login-brand">
-        <div className="brand-lockup"><span className="brand-mark">G</span><span>good showroom</span></div>
-        <div className="login-story"><p className="eyebrow">THE DEALERSHIP WORKSPACE</p><h1>Good days start with a clear view.</h1><p>Customer conversations, follow-ups, and the work ahead, together in one place.</p></div>
-        <div className="login-footer">A calmer way to run the showroom.</div>
-      </section>
-      <section className="login-form-side"><div className="login-form-wrap">
-        <p className="eyebrow">WELCOME BACK</p><h2>Sign in to Good Showroom</h2><p className="form-intro">Use the staff account invited by your administrator.</p>
-        <form onSubmit={signIn} className="form-stack">
-          <label>Email address<input type="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@dealership.com" /></label>
-          <label>Password<input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter your password" /></label>
-          {error && <p className="form-error" role="alert">{error}</p>}
-          <button className="button button-primary button-wide" type="submit" disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}<span aria-hidden="true">→</span></button>
-        </form>
-        <p className="login-help"><Link href="/auth/recover">Set or reset your password</Link></p>
-        <p className="login-help">Need access? Ask your dealership administrator to invite you.</p>
-      </div></section>
->>>>>>> Stashed changes
     </main>
   );
 }
