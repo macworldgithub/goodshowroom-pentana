@@ -1,4 +1,4 @@
-import { StockView } from "@/components/operations-views";
+import { LiveStock } from "@/components/live-stock";
 export default function StockPage() {
-  return <StockView />;
+  return <LiveStock />;
 }

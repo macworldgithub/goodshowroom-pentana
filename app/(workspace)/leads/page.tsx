@@ -1,4 +1,4 @@
-import { LeadsView } from "@/components/crm-views";
+import { LiveLeads } from "@/components/live-leads";
 export default function LeadsPage() {
-  return <LeadsView />;
+  return <LiveLeads />;
 }

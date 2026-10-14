@@ -1,5 +1,5 @@
-import { ImportsView } from "@/components/imports-view";
+import { LiveSync } from "@/components/live-sync";
 
 export default function SyncOperationsPage() {
-  return <ImportsView />;
+  return <LiveSync />;
 }

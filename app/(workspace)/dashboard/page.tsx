@@ -1,4 +1,4 @@
-import { DashboardView } from "@/components/crm-views";
+import { LiveMyDay } from "@/components/live-my-day";
 export default function DashboardPage() {
-  return <DashboardView />;
+  return <LiveMyDay />;
 }

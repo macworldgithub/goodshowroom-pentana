@@ -2,9 +2,9 @@ export const roles = ['Sales', 'Service', 'Admin'] as const;
 export type UserRole = (typeof roles)[number];
 
 export const roleAccess: Record<UserRole, readonly string[]> = {
-  Sales: ['/dashboard', '/leads', '/customers', '/pipeline', '/stock', '/deliveries', '/reports'],
-  Service: ['/dashboard', '/customers', '/deliveries', '/service', '/reports'],
-  Admin: ['/dashboard', '/leads', '/customers', '/pipeline', '/stock', '/deliveries', '/service', '/imports', '/sync', '/reports', '/settings'],
+  Sales: ['/invitations', '/dashboard', '/leads', '/customers', '/pipeline', '/stock', '/deliveries', '/reports'],
+  Service: ['/invitations', '/dashboard', '/customers', '/deliveries', '/service', '/reports'],
+  Admin: ['/invitations', '/dashboard', '/leads', '/customers', '/pipeline', '/stock', '/deliveries', '/service', '/imports', '/sync', '/reports', '/settings'],
 };
 
 export const roleHome: Record<UserRole, string> = {

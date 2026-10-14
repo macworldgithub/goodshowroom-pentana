@@ -2,15 +2,16 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from 'next/link';
 import { createClient } from "@/lib/supabase/client";
 import { roles, type UserRole } from "@/lib/roles";
 import { Icon } from "@/components/ui";
 
 const roleCopy: Record<UserRole, string> = {
-  Sales: "Leads, assigned customers, conversations, follow-ups, stock, opportunities and deliveries",
+  Sales: "Customers, shared notes, calls, email and personal follow-ups",
   Service:
-    "Service customers, booking requests, imported appointments and repair orders, updates and handovers",
-  Admin: "Users, dealership settings, CSV imports, assignments and full record access",
+    "Customers, shared activity, scheduled calls and personal follow-ups",
+  Admin: "Staff access, sites, brands, team queues and source command management",
 };
 
 export default function LoginPage() {
@@ -26,13 +27,12 @@ export default function LoginPage() {
     event.preventDefault();
     setPending(true);
     setError("");
-    window.localStorage.setItem("goodshowroom-role", role);
     try {
       const { error: authError } = await createClient().auth.signInWithPassword(
         { email, password },
       );
       if (authError) throw authError;
-      router.push(role === "Service" ? "/service" : "/dashboard");
+      router.push('/dashboard');
       router.refresh();
     } catch (cause) {
       setError(
@@ -73,7 +73,7 @@ export default function LoginPage() {
           <form onSubmit={signIn} className="space-y-5">
             <fieldset>
               <legend className="text-xs font-black uppercase tracking-wider text-slate-600">
-                Select your authorised role
+                Choose your workspace
               </legend>
               <div className="mt-2 grid gap-2 min-[440px]:grid-cols-3">
                 {roles.map((item) => (
@@ -154,10 +154,11 @@ export default function LoginPage() {
               <Icon name="chevron" className="h-4 w-4" />
             </button>
           </form>
+          <div className="mt-4 flex flex-wrap justify-between gap-3 text-sm"><Link className="text-brand underline" href="/forgot-password">Forgot password?</Link><Link className="text-slate-500 underline" href="/initial-setup">First-time administrator setup</Link></div>
           <div className="mt-6 flex flex-col gap-2 border-t border-slate-100 pt-5 text-[11px] font-semibold text-slate-500 min-[440px]:flex-row min-[440px]:items-center min-[440px]:justify-between">
             <span className="flex items-start gap-2">
               <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
-              Pentana connected · writes are audited
+              Access is verified after sign in
             </span>
             <span>One customer · One thread</span>
           </div>

@@ -1,7 +1,7 @@
-import { CustomerDetailView } from "@/components/crm-views";
+import { LiveCustomerDetail } from "@/components/live-customer-detail";
 export default async function CustomerPage({
   params,
 }: PageProps<"/customers/[id]">) {
   const { id } = await params;
-  return <CustomerDetailView id={id} />;
+  return <LiveCustomerDetail key={id} id={id} />;
 }

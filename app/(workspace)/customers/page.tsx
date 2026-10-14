@@ -1,4 +1,4 @@
-import { CustomersView } from "@/components/crm-views";
+import { LiveCustomers } from "@/components/live-customers";
 export default function CustomersPage() {
-  return <CustomersView />;
+  return <LiveCustomers />;
 }

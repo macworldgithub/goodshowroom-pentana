@@ -2,14 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
-import { canAccess, roleHome, roles, type UserRole } from "@/lib/roles";
+import { createContext, useContext, useState, type ReactNode } from "react";
+import { canAccess, roleHome, type UserRole } from "@/lib/roles";
+import { useWorkspace } from "./workspace-provider";
 import { Icon } from "./ui";
 
 type NavItem = {
@@ -73,7 +68,12 @@ const navigation: NavItem[] = [
     roles: ["Sales", "Service", "Admin"],
   },
   { href: "/imports", label: "CSV imports", icon: "upload", roles: ["Admin"] },
-  { href: "/sync", label: "Sync operations", icon: "refresh", roles: ["Admin"] },
+  {
+    href: "/sync",
+    label: "Sync operations",
+    icon: "refresh",
+    roles: ["Admin"],
+  },
   {
     href: "/settings",
     label: "Dealership settings",
@@ -84,6 +84,7 @@ const navigation: NavItem[] = [
 
 const pageNames: Record<string, string> = {
   dashboard: "My Day",
+  invitations: "Your invitations",
   leads: "Sales Enquiries",
   customers: "Customer 360",
   pipeline: "Sales Desk",
@@ -112,27 +113,23 @@ function RoleBadge({ role }: { role: UserRole }) {
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [role, setRole] = useState<UserRole>("Admin");
-  const [ready, setReady] = useState(false);
+  const {
+    role,
+    setRole,
+    availableRoles,
+    context,
+    site,
+    setSite,
+    signOut,
+    refresh,
+  } = useWorkspace();
+  const ready = true;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifications, setNotifications] = useState(false);
   const section = pathname.split("/")[1] || "dashboard";
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const stored = window.localStorage.getItem("goodshowroom-role");
-      if (roles.includes(stored as UserRole)) setRole(stored as UserRole);
-      setReady(true);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-  useEffect(() => {
-    if (ready && !canAccess(role, pathname)) router.replace(roleHome[role]);
-  }, [pathname, ready, role, router]);
-
   function changeRole(next: UserRole) {
     setRole(next);
-    window.localStorage.setItem("goodshowroom-role", next);
     setMobileOpen(false);
     if (!canAccess(next, pathname)) router.push(roleHome[next]);
   }
@@ -147,7 +144,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (!canAccess(role, pathname))
     return (
       <div className="grid min-h-screen place-items-center bg-[#f5f7fa] text-sm font-bold text-slate-500">
-        Opening your {role} workspace…
+        You do not have access to this page.{" "}
+        <Link href="/dashboard" className="ml-3 underline">
+          Open My Day
+        </Link>
       </div>
     );
 
@@ -190,18 +190,28 @@ export function AppShell({ children }: { children: ReactNode }) {
               onChange={(event) => changeRole(event.target.value as UserRole)}
               className="mt-2 h-10 w-full rounded-lg border border-slate-700 bg-[#111a2a] px-3 text-xs font-bold normal-case tracking-normal text-white outline-none focus:border-brand"
             >
-              {roles.map((item) => (
+              {availableRoles.map((item) => (
                 <option key={item}>{item}</option>
               ))}
             </select>
           </label>
-          <div className="mt-3 flex items-center justify-between rounded-lg border border-slate-700 bg-[#111a2a] px-3 py-2.5">
-            <span className="flex items-center gap-2 text-xs font-bold text-slate-300">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              VIC Multi-Franchise
-            </span>
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-              3 sites
+          <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-slate-700 bg-[#111a2a] px-3 py-2.5">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+            <select
+              aria-label="Site"
+              value={site.id}
+              onChange={(event) => setSite(event.target.value)}
+              className="min-w-0 flex-1 bg-[#111a2a] text-xs font-bold text-slate-300 outline-none focus:ring-1 focus:ring-brand"
+            >
+              {context.sites.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+            <span className="shrink-0 text-[10px] font-black uppercase tracking-wider text-slate-500">
+              {context.sites.length}{" "}
+              {context.sites.length === 1 ? "site" : "sites"}
             </span>
           </div>
         </div>
@@ -240,23 +250,23 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="mt-auto border-t border-white/10 p-4">
           <div className="flex items-center gap-3">
             <span className="grid h-9 w-9 place-items-center rounded-full bg-brand text-xs font-black">
-              MC
+              {context.user.email?.slice(0, 2).toUpperCase() ?? "GS"}
             </span>
             <div className="min-w-0 flex-1">
               <strong className="block truncate text-sm text-white">
-                Maya Chen
+                {context.user.email ?? "Staff member"}
               </strong>
               <span className="block text-xs font-semibold text-slate-400">
                 {role}
               </span>
             </div>
-            <Link
-              href="/login"
+            <button
+              onClick={() => void signOut()}
               className="rounded-md p-2 text-slate-500 hover:bg-white/5 hover:text-white"
               aria-label="Sign out"
             >
               <Icon name="chevron" className="h-4 w-4" />
-            </Link>
+            </button>
           </div>
         </div>
       </aside>
@@ -281,7 +291,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </span>
               </div>
               <p className="mt-0.5 hidden text-xs text-slate-500 sm:block">
-                Live Sales and Service work with Pentana write-back status
+                Customer profiles, shared activity and your daily follow-ups
               </p>
             </div>
           </div>
@@ -292,13 +302,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               aria-label="Notifications"
             >
               <Icon name="bell" />
-              <span className="absolute right-0 top-0 grid h-4 w-4 place-items-center rounded-full bg-brand text-[9px] font-black text-white">
-                3
-              </span>
             </button>
             <div className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 md:flex">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              VIC Multi-Franchise Network
+              {site.name}
             </div>
             {notifications && (
               <div className="absolute right-0 top-12 w-[min(320px,calc(100vw-24px))] rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
@@ -307,18 +314,63 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </p>
                 <div className="rounded-lg px-3 py-3 hover:bg-slate-50">
                   <strong className="text-sm text-slate-900">
-                    3 items need attention
+                    Workspace access
                   </strong>
                   <p className="mt-1 text-xs text-slate-500">
-                    Open your dashboard to review today’s priority queue.
+                    Your permissions are checked against your current site
+                    membership.
                   </p>
                 </div>
+                <button
+                  className="px-3 py-2 text-sm underline"
+                  onClick={() => void refresh()}
+                >
+                  Refresh access
+                </button>
+                <Link
+                  href="/invitations"
+                  className="block px-3 py-2 text-sm underline"
+                  onClick={() => setNotifications(false)}
+                >
+                  Your invitations
+                </Link>
+                <Link
+                  href="/set-password"
+                  className="block px-3 py-2 text-sm underline"
+                  onClick={() => setNotifications(false)}
+                >
+                  Manage password
+                </Link>
               </div>
             )}
           </div>
         </header>
         <main className="mx-auto w-full min-w-0 max-w-[1500px] p-3 min-[400px]:p-4 sm:p-6 lg:p-8">
-          <RoleContext.Provider value={role}>{children}</RoleContext.Provider>
+          <RoleContext.Provider value={role}>
+            {[
+              "dashboard",
+              "leads",
+              "pipeline",
+              "stock",
+              "customers",
+              "settings",
+              "sync",
+              "invitations",
+            ].includes(section) ? (
+              children
+            ) : (
+              <div className="rounded-xl border bg-white p-6">
+                <h2 className="text-xl font-bold">This desk is coming next</h2>
+                <p className="mt-2 text-slate-600">
+                  Sales and Service desks will be connected in the next
+                  implementation steps.
+                </p>
+                <Link href="/dashboard" className="mt-4 inline-block underline">
+                  Open My Day
+                </Link>
+              </div>
+            )}
+          </RoleContext.Provider>
         </main>
       </div>
     </div>

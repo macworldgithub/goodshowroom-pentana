@@ -1,4 +1,4 @@
-import { SettingsView } from "@/components/settings-view";
+import { LiveSettings } from "@/components/live-settings";
 export default function SettingsPage() {
-  return <SettingsView />;
+  return <LiveSettings />;
 }

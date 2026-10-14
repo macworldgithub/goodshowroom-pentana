@@ -220,7 +220,7 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="mb-5 flex min-w-0 flex-col justify-between gap-4 sm:mb-6 lg:flex-row lg:items-end">
+    <div className="mb-5 flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,.03)] sm:mb-6 sm:p-6 lg:flex-row lg:items-end">
       <div className="min-w-0">
         <p className="mb-2 text-[11px] font-black uppercase tracking-[.14em] text-brand">
           {eyebrow}
@@ -263,13 +263,13 @@ export function StatCard({
     violet: "bg-violet-50 text-violet-700",
   }[tone];
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,.03)]">
+    <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-[0_3px_12px_rgba(15,23,42,.04)]">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
             {label}
           </p>
-          <strong className="mt-2 block font-serif text-3xl font-semibold text-slate-950">
+          <strong className="mt-3 block text-3xl font-bold tracking-tight text-slate-950">
             {value}
           </strong>
           <p className="mt-1 text-sm text-slate-500">{detail}</p>

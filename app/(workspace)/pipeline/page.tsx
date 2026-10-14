@@ -1,4 +1,4 @@
-import { PipelineView } from "@/components/crm-views";
+import { LivePipeline } from "@/components/live-pipeline";
 export default function PipelinePage() {
-  return <PipelineView />;
+  return <LivePipeline />;
 }

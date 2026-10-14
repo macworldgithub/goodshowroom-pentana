@@ -1,5 +1,10 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+The active workspace is now connected to the backend through implementation Step 3.
+See [FRONTEND-INTEGRATION.md](FRONTEND-INTEGRATION.md) for local configuration,
+connected workflows, testing and remaining provider/source dependencies. The frontend
+production build uses Webpack; start the backend before signing into the workspace.
+
 ## Getting Started
 
 First, run the development server:
