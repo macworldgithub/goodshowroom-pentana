@@ -15,6 +15,7 @@ import {
 import { Badge, Button, EmptyState, Modal } from "./ui";
 import { useWorkspace } from "./workspace-provider";
 import { LiveReservations } from "./live-reservations";
+import { LiveDeliveryDialog } from "./live-deliveries";
 
 type Lead = { id: string; title: string; status: string };
 type Deal = {
@@ -64,6 +65,7 @@ export function LiveDeals({
     null,
   );
   const [reservationDeal, setReservationDeal] = useState<Deal | null>(null);
+  const [deliveryDeal, setDeliveryDeal] = useState<Deal | null>(null);
   const resource = useResource<{ deals: Deal[]; pagination: Page }>(
     `sales/leads/${lead.id}/deals?${query({ siteId: site.id, offset, limit: 5 })}`,
   );
@@ -186,7 +188,7 @@ export function LiveDeals({
   }
   return (
     <>
-      {!editor && !action && !reservationDeal && (
+      {!editor && !action && !reservationDeal && !deliveryDeal && (
         <Modal
           open
           title="Deal proposals"
@@ -313,6 +315,14 @@ export function LiveDeals({
                     >
                       Reservation
                     </Button>
+                    {can("deliveries.read") && (
+                      <Button
+                        variant="secondary"
+                        onClick={() => setDeliveryDeal(item)}
+                      >
+                        Delivery plan
+                      </Button>
+                    )}
                     {item.reservation && (
                       <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800">
                         Reserved until{" "}
@@ -429,6 +439,17 @@ export function LiveDeals({
           leadId={lead.id}
           deal={reservationDeal}
           onClose={() => setReservationDeal(null)}
+          onSaved={() => {
+            resource.reload();
+            onSaved();
+          }}
+        />
+      )}
+      {deliveryDeal && (
+        <LiveDeliveryDialog
+          leadId={lead.id}
+          deal={deliveryDeal}
+          onClose={() => setDeliveryDeal(null)}
           onSaved={() => {
             resource.reload();
             onSaved();

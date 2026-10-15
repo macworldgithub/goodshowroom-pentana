@@ -49,6 +49,7 @@ function salesDialog(file, exportName, state, transport, props) {
       if (id === "./live-common")
         return {
           ActionDialog: "ActionDialog",
+          localDate: (value) => String(value).slice(0, 16),
           useResource: () => ({ reload: () => {} }),
           useDirectory: () => ({
             items: [],
@@ -73,6 +74,48 @@ function salesDialog(file, exportName, state, transport, props) {
   assert.ok(dialog, "Expected the workflow dialog to be rendered");
   return dialog;
 }
+
+test("Workshop forms send typed hours, resource versions and safe retry keys", async () => {
+  const calls = [];
+  const transport = client(async (url, init) => { calls.push({ url, init }); return Response.json({}); }, { access_token: "test-token" });
+  const create = salesDialog("components/live-service-diary.tsx", "LiveServiceDiary", ["", "", "60", 0, "new"], transport, { onBook: () => {} });
+  const values = { name: "Bay one", days: "1,2,3,4,5", openMinute: "480", closeMinute: "1020" };
+  await create.onSubmit(values, "stable-resource-key");
+  assert.equal(calls[0].url, "/api/backend/service/resources");
+  assert.equal(calls[0].init.headers["Idempotency-Key"], "stable-resource-key");
+  assert.deepEqual(JSON.parse(calls[0].init.body), { siteId: "site-id", name: "Bay one", days: [1,2,3,4,5], openMinute: 480, closeMinute: 1020 });
+  const row = { id: "bay-id", name: values.name, days: [1,2,3,4,5], open_minute: 480, close_minute: 1020, active: true, version: 3 };
+  const edit = salesDialog("components/live-service-diary.tsx", "LiveServiceDiary", ["", "", "60", 0, row], transport, { onBook: () => {} });
+  await edit.onSubmit({ ...values, active: false });
+  assert.equal(calls[1].init.method, "PATCH");
+  assert.equal(JSON.parse(calls[1].init.body).version, 3);
+  assert.equal(JSON.parse(calls[1].init.body).active, false);
+});
+
+
+test("Service appointment forms preserve booking times, versions and explicit outcomes", async () => {
+  const calls = [];
+  const transport = client(async (url, init) => { calls.push({ url, init }); return Response.json({}); }, { access_token: "test-token" });
+  const booking = salesDialog("components/live-service-appointments.tsx", "LiveServiceAppointments", ["booked", 0, { kind: "new" }], transport);
+  const values = { customerId: "customer-id", brandId: "brand-id", resourceId: "bay-id", title: "Maintenance", vehicle: "Kia TEST-123", notes: "",
+    startsAt: "2026-10-20T10:00", endsAt: "2026-10-20T11:00" };
+  await booking.onSubmit(values, "stable-booking-key");
+  assert.equal(calls[0].url, "/api/backend/service/appointments");
+  assert.equal(calls[0].init.headers["Idempotency-Key"], "stable-booking-key");
+  assert.equal(JSON.parse(calls[0].init.body).startsAt, new Date(values.startsAt).toISOString());
+  assert.equal(JSON.parse(calls[0].init.body).resourceId, "bay-id");
+  const row = { id: "appointment-id", resource_id: "bay-id", version: 3, title: values.title, vehicle: values.vehicle, notes: "", status: "booked",
+    starts_at: "2026-10-20T10:00", ends_at: "2026-10-20T11:00" };
+  const edit = salesDialog("components/live-service-appointments.tsx", "LiveServiceAppointments", ["booked", 0, { kind: "edit", row }], transport);
+  await edit.onSubmit(values);
+  assert.equal(calls[1].init.method, "PATCH");
+  assert.equal(JSON.parse(calls[1].init.body).version, 3);
+  assert.equal(Object.hasOwn(JSON.parse(calls[1].init.body), "startsAt"), false, "Unchanged schedule should preserve confirmation");
+  const outcome = salesDialog("components/live-service-appointments.tsx", "LiveServiceAppointments", ["booked", 0, { kind: "status", row }], transport);
+  await outcome.onSubmit({ status: "cancelled", outcomeNote: "Customer changed plans" });
+  assert.deepEqual(JSON.parse(calls[2].init.body), { siteId: "site-id", version: 3, status: "cancelled", outcomeNote: "Customer changed plans" });
+});
+
 
 test("enquiry and pipeline forms send JSON objects through the authenticated transport with their version and retry key", async () => {
   const calls = [];
@@ -367,6 +410,97 @@ test("enquiry and pipeline forms send JSON objects through the authenticated tra
     version: 0,
     note: "Customer requested release",
   });
+  const deliveryProps = {
+    leadId: "lead-id",
+    deal: { id: "deal-id", status: "approved", stock_label: "Stock vehicle" },
+    onClose: () => {},
+    onSaved: () => {},
+  };
+  const planning = salesDialog(
+    "components/live-deliveries.tsx",
+    "LiveDeliveryDialog",
+    [{ kind: "plan" }, "2026-10-15T09:00"],
+    transport,
+    deliveryProps,
+  );
+  await planning.onSubmit(
+    { scheduledAt: "2026-10-15T09:00", notes: "Delivery planning test" },
+    "stable-delivery-key",
+  );
+  assert.equal(calls[11].url, "/api/backend/sales/deliveries");
+  assert.equal(
+    calls[11].init.headers["Idempotency-Key"],
+    "stable-delivery-key",
+  );
+  const planned = JSON.parse(calls[11].init.body);
+  assert.equal(planned.leadId, "lead-id");
+  assert.equal(planned.dealId, "deal-id");
+  const checklist = salesDialog(
+    "components/live-deliveries.tsx",
+    "LiveDeliveryDialog",
+    [
+      {
+        kind: "check",
+        plan: { id: "delivery-id", version: 3 },
+        item: "documents",
+        complete: true,
+      },
+      "2026-10-15T09:00",
+    ],
+    transport,
+    deliveryProps,
+  );
+  await checklist.onSubmit({ complete: true, note: "Documents reviewed" });
+  assert.equal(
+    calls[12].url,
+    "/api/backend/sales/deliveries/delivery-id/checklist",
+  );
+  assert.deepEqual(JSON.parse(calls[12].init.body), {
+    siteId: "site-id",
+    version: 3,
+    item: "documents",
+    complete: true,
+    note: "Documents reviewed",
+  });
+  const reschedule = salesDialog(
+    "components/live-deliveries.tsx",
+    "LiveDeliveryDialog",
+    [
+      {
+        kind: "plan",
+        plan: {
+          id: "delivery-id",
+          version: 4,
+          scheduled_at: "2026-10-15T09:00:00.000Z",
+        },
+      },
+      "2026-10-15T09:00",
+    ],
+    transport,
+    deliveryProps,
+  );
+  await reschedule.onSubmit({
+    scheduledAt: "2026-10-15T10:00",
+    notes: "New appointment time",
+  });
+  assert.equal(calls[13].url, "/api/backend/sales/deliveries/delivery-id");
+  assert.equal(JSON.parse(calls[13].init.body).version, 4);
+  const cancelPlan = salesDialog(
+    "components/live-deliveries.tsx",
+    "LiveDeliveryDialog",
+    [
+      { kind: "cancel", plan: { id: "delivery-id", version: 5 } },
+      "2026-10-15T09:00",
+    ],
+    transport,
+    deliveryProps,
+  );
+  await cancelPlan.onSubmit({ note: "Customer requested another date" });
+  assert.equal(
+    calls[14].url,
+    "/api/backend/sales/deliveries/delivery-id/cancel",
+  );
+  assert.equal(JSON.parse(calls[14].init.body).version, 5);
 });
 function proxy(fetch, env = { BACKEND_API_URL: "http://backend.test/api" }) {
   return moduleFrom("app/api/backend/[...path]/route.ts", { fetch, env });

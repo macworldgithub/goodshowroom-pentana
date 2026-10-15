@@ -1,4 +1,4 @@
-import { DeliveriesView } from "@/components/operations-views";
+import { LiveDeliveries } from "@/components/live-deliveries";
 export default function DeliveriesPage() {
-  return <DeliveriesView />;
+  return <LiveDeliveries />;
 }

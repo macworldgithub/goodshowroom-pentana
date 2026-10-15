@@ -97,3 +97,9 @@ completion and shared lifecycle history. Direct access to Settings was denied.
 The test customer/history/draft remain labelled in the development database; no
 customer email or actual call was sent/placed. Administrator account changes and
 live email delivery were not exercised against real identities during this walkthrough.
+
+Step 4 delivery update: Sales desk → Deals → Delivery plan and the existing Handover lane now connect scheduling, role-specific checklists and computed readiness. Sidebars remain unchanged. Eight frontend tests and the production build passed. Signed-in Sales browser acceptance remains pending because browser automation failed to initialize. See ../good-showroom-backend/DELIVERY-READINESS.md.
+
+Step 5 first increment: /service now connects customer-linked appointments, site brands, advisor assignment, booking edits/rescheduling and explicit attendance/cancellation outcomes. Existing sidebars are retained. Nine frontend tests, lint/type checks and production build passed. Browser walkthrough remains blocked by tool initialization. Diary/capacity and My Day appointment inputs follow next. See ../good-showroom-backend/SERVICE-APPOINTMENTS.md.
+
+Service diary/capacity: /service now shows daily appointments, workshop bays/hours, available slots and resource-linked booking. ADMIN manages bays. My Day shows a separately paginated Service appointment queue with independent own/team access and full authorized counts. Existing sidebars are retained. Ten frontend tests pass; browser acceptance remains blocked by tool initialization. See ../good-showroom-backend/SERVICE-DIARY.md.

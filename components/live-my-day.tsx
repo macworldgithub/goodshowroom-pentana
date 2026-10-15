@@ -14,6 +14,7 @@ import {
   StatCard,
 } from "./ui";
 import { TaskCard } from "./live-tasks";
+import { AppointmentQueue } from "./live-service-diary";
 type Day = {
   day: { date: string; timezone: string };
   view: string;
@@ -185,6 +186,12 @@ export function LiveMyDay() {
           />
         </div>
       </Panel>
+      {can("service.read") && (
+        <AppointmentQueue key={date || resource.data?.day.date || "today"}
+          dailyWork
+          selectedDate={date || resource.data?.day.date}
+        />
+      )}
     </>
   );
 }

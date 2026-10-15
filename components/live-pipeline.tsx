@@ -66,6 +66,9 @@ type History = {
   reservationId?: string | null;
   reservationStatus?: string | null;
   reservationExpiresAt?: string | null;
+  deliveryId?: string | null;
+  deliveryStatus?: string | null;
+  deliveryScheduledAt?: string | null;
 };
 
 function EnquiryHistory({
@@ -114,9 +117,11 @@ function EnquiryHistory({
                             ? "Trade-in appraisal updated"
                             : event.type.startsWith("sales.reservation_")
                               ? `Reservation ${event.type.replace("sales.reservation_", "")}`
-                              : event.type.startsWith("sales.deal_")
-                                ? `Deal ${event.type.replace("sales.deal_", "")}`
-                                : "Enquiry updated"}
+                              : event.type.startsWith("sales.delivery_")
+                                ? `Delivery ${event.type.replace("sales.delivery_", "")}`
+                                : event.type.startsWith("sales.deal_")
+                                  ? `Deal ${event.type.replace("sales.deal_", "")}`
+                                  : "Enquiry updated"}
               </h3>
               <span className="text-xs text-slate-500">
                 {timestamp(event.occurredAt, site.timezone)}
@@ -161,6 +166,14 @@ function EnquiryHistory({
                 {event.reservationStatus} · Expiry{" "}
                 {event.reservationExpiresAt
                   ? timestamp(event.reservationExpiresAt, site.timezone)
+                  : "Not recorded"}
+              </p>
+            )}
+            {event.deliveryId && (
+              <p className="mt-2 text-sm font-semibold text-slate-700">
+                {event.deliveryStatus} · Planned{" "}
+                {event.deliveryScheduledAt
+                  ? timestamp(event.deliveryScheduledAt, site.timezone)
                   : "Not recorded"}
               </p>
             )}

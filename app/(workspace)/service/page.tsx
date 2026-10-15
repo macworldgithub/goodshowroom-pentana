@@ -1,4 +1,4 @@
-import { ServiceView } from "@/components/operations-views";
+import { LiveServiceAppointments } from "@/components/live-service-appointments";
 export default function ServicePage() {
-  return <ServiceView />;
+  return <LiveServiceAppointments />;
 }

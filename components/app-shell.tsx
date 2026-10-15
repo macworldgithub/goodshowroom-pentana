@@ -352,6 +352,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               "leads",
               "pipeline",
               "stock",
+              "deliveries",
+              "service",
               "customers",
               "settings",
               "sync",
