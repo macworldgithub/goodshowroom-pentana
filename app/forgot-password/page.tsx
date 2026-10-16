@@ -1,10 +1,10 @@
 "use client";
-import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { errorMessage } from "@/lib/backend";
 import { Button, FormField, inputClass } from "@/components/ui";
-import { Feedback, panelClass } from "@/components/live-common";
+import { Feedback } from "@/components/live-common";
+import { AuthFrame } from "@/components/auth-frame";
 export default function Page() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -30,25 +30,17 @@ export default function Page() {
     }
   }
   return (
-    <main className="mx-auto max-w-lg p-6 pt-16">
-      <section className={panelClass}>
-        <h1 className="mb-4 text-2xl font-black">Reset your password</h1>
-        <form onSubmit={submit} className="space-y-4">
+    <AuthFrame title="Forgot your password?" description="Enter your work email and we’ll send you a link to reset your password." icon="mail" eyebrow="Password recovery">
+        <form onSubmit={submit} className="space-y-5" aria-busy={busy}>
           <FormField label="Work email">
-            <input name="email" type="email" required className={inputClass} />
+            <input name="email" type="email" autoComplete="email" placeholder="you@dealership.com" required className={inputClass} />
           </FormField>
           <Feedback error={error} message={notice} />
-          <Button type="submit" disabled={busy || !!notice}>
-            Request recovery link
+          <Button type="submit" className="w-full" disabled={busy || !!notice}>
+            {busy ? "Sending recovery link…" : notice ? "Recovery link requested" : "Send recovery link"}
           </Button>
         </form>
-        <Link
-          className="mt-5 inline-block text-sm text-brand underline"
-          href="/login"
-        >
-          Back to sign in
-        </Link>
-      </section>
-    </main>
+        <p className="mt-6 border-t border-slate-100 pt-5 text-xs leading-5 text-slate-500">Check your spam folder if the email doesn’t arrive. For further help, contact your dealership administrator.</p>
+    </AuthFrame>
   );
 }

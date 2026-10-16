@@ -85,6 +85,9 @@ export function Icon({
       </>
     ),
     plus: <path d="M12 5v14M5 12h14" />,
+    "arrow-left": <path d="m11 5-7 7 7 7M4 12h16" />,
+    lock: <><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" /></>,
+    eye: <><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></>,
     menu: <path d="M4 7h16M4 12h16M4 17h16" />,
     close: <path d="m6 6 12 12M18 6 6 18" />,
     chevron: <path d="m9 18 6-6-6-6" />,
@@ -186,7 +189,7 @@ export function Button({
 }) {
   const variants = {
     primary:
-      "bg-brand text-white hover:bg-brand-dark shadow-[0_4px_10px_rgba(201,24,30,.22)]",
+      "bg-brand text-white hover:bg-brand-dark shadow-[0_2px_4px_rgba(201,24,30,.16)]",
     secondary:
       "border border-slate-300 bg-white text-[#12203a] hover:bg-slate-50",
     ghost: "text-slate-600 hover:bg-slate-100",
@@ -200,7 +203,7 @@ export function Button({
     <button
       type={type}
       onClick={fallback}
-      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
       {...props}
     >
       {children}
@@ -220,12 +223,12 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="mb-5 flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,.03)] sm:mb-6 sm:p-6 lg:flex-row lg:items-end">
+    <div className="mb-5 flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,.03)] sm:mb-6 sm:p-7 lg:flex-row lg:items-end">
       <div className="min-w-0">
         <p className="mb-2 text-[11px] font-black uppercase tracking-[.14em] text-brand">
           {eyebrow}
         </p>
-        <h1 className="text-2xl font-black tracking-tight text-[#10182b] sm:text-3xl">
+        <h1 className="text-2xl font-semibold tracking-tight text-[#10182b] sm:text-3xl">
           {title}
         </h1>
         <p className="mt-1.5 max-w-2xl text-sm leading-6 text-slate-500">
@@ -454,7 +457,7 @@ export function FormField({
 }
 
 export const inputClass =
-  "h-11 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand-soft";
+  "h-12 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-brand focus:ring-4 focus:ring-brand-soft disabled:bg-slate-50 disabled:text-slate-500";
 
 export function ModalForm({
   onSubmit,

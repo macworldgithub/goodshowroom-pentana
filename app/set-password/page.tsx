@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { errorMessage } from "@/lib/backend";
 import { Button, FormField, inputClass } from "@/components/ui";
-import { Feedback, panelClass } from "@/components/live-common";
+import { Feedback } from "@/components/live-common";
+import { AuthFrame } from "@/components/auth-frame";
 export default function Page() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
@@ -50,10 +51,8 @@ export default function Page() {
     }
   }
   return (
-    <main className="mx-auto max-w-lg p-6 pt-16">
-      <section className={panelClass}>
-        <h1 className="mb-4 text-2xl font-black">Set your password</h1>
-        <form onSubmit={submit} className="space-y-4">
+    <AuthFrame title="Set a new password" description="Choose a strong password to keep your workspace account protected." eyebrow="Account security">
+        <form onSubmit={submit} className="space-y-5" aria-busy={busy}>
           <FormField label="New password">
             <input
               name="password"
@@ -62,6 +61,7 @@ export default function Page() {
               minLength={12}
               maxLength={128}
               autoComplete="new-password"
+              placeholder="At least 12 characters"
               className={inputClass}
             />
           </FormField>
@@ -71,16 +71,18 @@ export default function Page() {
               type="password"
               required
               minLength={12}
+              maxLength={128}
               autoComplete="new-password"
+              placeholder="Re-enter your new password"
               className={inputClass}
             />
           </FormField>
           <Feedback error={error} />
-          <Button type="submit" disabled={!ready || busy}>
-            Save password
+          <Button type="submit" className="w-full" disabled={!ready || busy}>
+            {busy ? "Saving password…" : "Save password"}
           </Button>
         </form>
-      </section>
-    </main>
+        <p className="mt-6 border-t border-slate-100 pt-5 text-xs leading-5 text-slate-500">Use 12–128 characters. A mix of words, numbers and symbols makes your password harder to guess.</p>
+    </AuthFrame>
   );
 }

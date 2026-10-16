@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from 'next/link';
 import { createClient } from "@/lib/supabase/client";
 import { roles, type UserRole } from "@/lib/roles";
-import { Icon } from "@/components/ui";
+import { Icon, inputClass } from "@/components/ui";
+import { AuthFrame } from "@/components/auth-frame";
 
 const roleCopy: Record<UserRole, string> = {
   Sales: "Customers, shared notes, calls, email and personal follow-ups",
@@ -45,34 +46,10 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="grid min-h-[100dvh] place-items-center border-t-2 border-brand bg-[radial-gradient(circle_at_50%_35%,#fff_0%,#f8f6f7_42%,#f5f7fa_100%)] p-3 min-[400px]:p-4 sm:p-8">
-      <div className="w-full max-w-lg">
-        <header className="mb-5 text-center sm:mb-6">
-          <span className="inline-flex max-w-full rounded-full border border-brand/30 bg-brand-soft px-3 py-1 text-[10px] font-black uppercase tracking-[.12em] text-brand min-[400px]:px-6 min-[400px]:text-[11px] min-[400px]:tracking-[.16em]">
-            Good Showroom · Pentana operating layer
-          </span>
-          <div className="mt-4 flex items-center justify-center gap-2">
-            <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#0b111c] text-sm font-black text-white">
-              GS
-            </span>
-            <strong className="text-lg font-black uppercase leading-5 tracking-tight text-[#0b111c] min-[400px]:text-xl">
-              Good Showroom
-            </strong>
-          </div>
-          <h1 className="mt-3 text-2xl font-black tracking-tight text-[#0d1930]">
-            Sales &amp; Service Operating Workspace
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Run the customer day in one place while Pentana remains the system of record
-          </p>
-        </header>
-        <section className="rounded-[18px] border border-slate-200 bg-white p-4 shadow-[0_16px_45px_rgba(15,23,42,.10)] min-[400px]:p-6 sm:rounded-[22px] sm:p-8">
-          <div className="mb-6 rounded-xl border-2 border-[#0b111c] px-2 py-2 text-center text-xs font-black uppercase tracking-wide text-[#0b111c]">
-            Secure staff sign in
-          </div>
+    <AuthFrame login title="Welcome back" description="Sign in with your work account to continue to your dealership workspace." eyebrow="Staff sign in">
           <form onSubmit={signIn} className="space-y-5">
             <fieldset>
-              <legend className="text-xs font-black uppercase tracking-wider text-slate-600">
+              <legend className="text-sm font-semibold text-slate-700">
                 Choose your workspace
               </legend>
               <div className="mt-2 grid gap-2 min-[440px]:grid-cols-3">
@@ -80,8 +57,9 @@ export default function LoginPage() {
                   <button
                     key={item}
                     type="button"
+                    aria-pressed={role === item}
                     onClick={() => setRole(item)}
-                    className={`min-h-[72px] rounded-xl border-2 p-3 text-left transition min-[440px]:min-h-[86px] ${role === item ? "border-brand bg-brand-soft" : "border-slate-200 bg-white hover:border-slate-300"}`}
+                    className={`min-h-11 rounded-xl border p-3 text-left transition ${role === item ? "border-brand bg-brand-soft" : "border-slate-200 bg-white hover:border-slate-300"}`}
                   >
                     <span className="flex items-center gap-2 text-sm font-black text-[#162039]">
                       <span
@@ -89,18 +67,18 @@ export default function LoginPage() {
                       />
                       {item}
                     </span>
-                    <span className="mt-1.5 block text-[11px] leading-4 text-slate-500">
+                    <span className="sr-only">
                       {roleCopy[item]}
                     </span>
                   </button>
                 ))}
               </div>
             </fieldset>
-            <label className="block text-xs font-black uppercase tracking-wider text-slate-600">
+            <label className="block text-sm font-semibold text-slate-700">
               Work email address
               <span className="relative mt-2 block">
                 <input
-                  className="h-11 w-full rounded-xl border border-slate-300 px-3 pr-10 text-sm font-medium text-slate-900 outline-none focus:border-brand focus:ring-2 focus:ring-brand-soft"
+                  className={`${inputClass} pr-10`}
                   type="email"
                   autoComplete="username"
                   required
@@ -114,11 +92,11 @@ export default function LoginPage() {
                 />
               </span>
             </label>
-            <label className="block text-xs font-black uppercase tracking-wider text-slate-600">
+            <label className="block text-sm font-semibold text-slate-700">
               Password
               <span className="relative mt-2 block">
                 <input
-                  className="h-11 w-full rounded-xl border border-slate-300 px-3 pr-10 text-sm text-slate-900 outline-none focus:border-brand focus:ring-2 focus:ring-brand-soft"
+                  className={`${inputClass} pr-10`}
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
@@ -133,7 +111,7 @@ export default function LoginPage() {
                   className="absolute right-2 top-1.5 rounded-md p-2 text-slate-400 hover:bg-slate-50"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  <Icon name="search" className="h-4 w-4" />
+                  <Icon name="eye" className="h-4 w-4" />
                 </button>
               </span>
             </label>
@@ -154,7 +132,7 @@ export default function LoginPage() {
               <Icon name="chevron" className="h-4 w-4" />
             </button>
           </form>
-          <div className="mt-4 flex flex-wrap justify-between gap-3 text-sm"><Link className="text-brand underline" href="/forgot-password">Forgot password?</Link><Link className="text-slate-500 underline" href="/initial-setup">First-time administrator setup</Link></div>
+          <div className="mt-4 flex flex-wrap justify-between gap-3 text-sm"><Link className="font-semibold text-brand hover:underline" href="/forgot-password">Forgot password?</Link><Link className="text-slate-500 hover:text-slate-900 hover:underline" href="/initial-setup">First-time administrator setup</Link></div>
           <div className="mt-6 flex flex-col gap-2 border-t border-slate-100 pt-5 text-[11px] font-semibold text-slate-500 min-[440px]:flex-row min-[440px]:items-center min-[440px]:justify-between">
             <span className="flex items-start gap-2">
               <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
@@ -162,8 +140,6 @@ export default function LoginPage() {
             </span>
             <span>One customer · One thread</span>
           </div>
-        </section>
-      </div>
-    </main>
+    </AuthFrame>
   );
 }

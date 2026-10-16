@@ -6,6 +6,7 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 import { canAccess, roleHome, type UserRole } from "@/lib/roles";
 import { useWorkspace } from "./workspace-provider";
 import { Icon } from "./ui";
+import { BackButton } from "./back-button";
 
 type NavItem = {
   href: string;
@@ -26,7 +27,6 @@ const navigation: NavItem[] = [
     href: "/leads",
     label: "Sales enquiries",
     icon: "leads",
-    count: 12,
     roles: ["Sales", "Admin"],
   },
   {
@@ -51,14 +51,12 @@ const navigation: NavItem[] = [
     href: "/deliveries",
     label: "Handover lane",
     icon: "delivery",
-    count: 3,
     roles: ["Sales", "Service", "Admin"],
   },
   {
     href: "/service",
     label: "Service desk",
     icon: "service",
-    count: 5,
     roles: ["Service", "Admin"],
   },
   {
@@ -221,9 +219,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         >
           {visibleNav.map((item) => {
             const active =
-              pathname === item.href ||
-              (item.href === "/customers" &&
-                pathname.startsWith("/customers/"));
+              pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
               <Link
                 key={item.href}
@@ -280,11 +276,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <Icon name="menu" />
             </button>
+            {pathname.split("/").filter(Boolean).length > 1 && (
+              <BackButton fallbackHref={pathname.startsWith("/customers/") ? "/customers" : pathname.startsWith("/service/repair-orders/") ? "/service/repair-orders" : pathname.startsWith("/service/") ? "/service" : "/dashboard"} className="mr-1" />
+            )}
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="truncate text-base font-black tracking-tight text-[#10182b] min-[400px]:text-lg sm:text-xl">
+                <p className="truncate text-base font-semibold tracking-tight text-[#10182b] min-[400px]:text-lg sm:text-xl">
                   {pageNames[section] ?? "Customer Record"}
-                </h1>
+                </p>
                 <span className="hidden rounded-full bg-[#10182b] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white sm:inline-flex">
                   <span className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-brand" />
                   {role} portal
@@ -347,31 +346,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
         <main className="mx-auto w-full min-w-0 max-w-[1500px] p-3 min-[400px]:p-4 sm:p-6 lg:p-8">
           <RoleContext.Provider value={role}>
-            {[
-              "dashboard",
-              "leads",
-              "pipeline",
-              "stock",
-              "deliveries",
-              "service",
-              "customers",
-              "settings",
-              "sync",
-              "invitations",
-            ].includes(section) ? (
-              children
-            ) : (
-              <div className="rounded-xl border bg-white p-6">
-                <h2 className="text-xl font-bold">This desk is coming next</h2>
-                <p className="mt-2 text-slate-600">
-                  Sales and Service desks will be connected in the next
-                  implementation steps.
-                </p>
-                <Link href="/dashboard" className="mt-4 inline-block underline">
-                  Open My Day
-                </Link>
-              </div>
-            )}
+            {children}
           </RoleContext.Provider>
         </main>
       </div>

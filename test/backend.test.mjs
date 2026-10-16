@@ -90,6 +90,38 @@ test("workspace displays missing Supabase configuration without an uncaught effe
   }
 });
 
+test("back navigation uses history, retains a direct-entry fallback and respects modified clicks", () => {
+  let backCalls = 0;
+  const jsx = (type, props) => ({ type, props });
+  const helper = moduleFrom("components/back-button.tsx", {
+    require: (id) => {
+      if (id === "react/jsx-runtime") return { jsx, jsxs: jsx };
+      if (id === "next/navigation") return { useRouter: () => ({ back: () => backCalls++ }) };
+      return {};
+    },
+  });
+  const previousWindow = globalThis.window;
+  globalThis.window = { history: { length: 1 } };
+  try {
+    let prevented = false;
+    const event = { preventDefault: () => { prevented = true; } };
+    const link = helper.BackButton({ fallbackHref: "/customers" });
+    assert.equal(link.props.href, "/customers");
+    link.props.onClick(event);
+    assert.equal(prevented, false);
+    globalThis.window.history.length = 2;
+    link.props.onClick(event);
+    assert.equal(backCalls, 1);
+    assert.equal(prevented, true);
+    link.props.onClick({ ...event, ctrlKey: true });
+    helper.BackButton({ href: "/login" }).props.onClick(event);
+    assert.equal(backCalls, 1);
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
 function moduleFrom(file, dependencies = {}) {
   const code = ts.transpileModule(readFileSync(file, "utf8"), {
     compilerOptions: {

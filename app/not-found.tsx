@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackButton } from "@/components/back-button";
 export default function NotFound() {
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f7fa] p-6">
@@ -18,6 +19,7 @@ export default function NotFound() {
         >
           Return to dashboard
         </Link>
+        <div className="mt-4"><BackButton /></div>
       </div>
     </main>
   );
