@@ -40,10 +40,11 @@ async function forward(request: Request, context: RouteContext) {
         signal: AbortSignal.timeout(45000),
       },
     );
-    return new Response(await response.text(), {
+    const hasNoBody = [204, 205, 304].includes(response.status);
+    return new Response(hasNoBody ? null : await response.text(), {
       status: response.status,
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": response.headers.get("Content-Type") ?? "application/json",
         "Cache-Control": "no-store",
       },
     });

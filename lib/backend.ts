@@ -44,12 +44,21 @@ export async function api<T>(path: string, options: Options = {}): Promise<T> {
       response = await send();
     }
   }
-  const data = await response.json();
+  if (response.status === 204 || response.status === 205) return undefined as T;
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    throw new ApiError(
+      "The service returned an unreadable response. Refresh to check the latest status before retrying a write.",
+      response.ok ? 502 : response.status,
+    );
+  }
   if (!response.ok)
     throw new ApiError(
-      Array.isArray(data.message)
+      Array.isArray(data?.message)
         ? data.message.join(". ")
-        : (data.message ?? "Request failed"),
+        : (typeof data?.message === "string" ? data.message : "Request failed"),
       response.status,
     );
   return data as T;

@@ -292,17 +292,24 @@ export function ActionDialog({
 export const panelClass =
   "rounded-xl border border-slate-200 bg-white p-5 shadow-sm";
 export function timestamp(value?: string | null, timezone?: string) {
-  return value
-    ? new Intl.DateTimeFormat("en-AU", {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "—";
+  try {
+    return new Intl.DateTimeFormat("en-AU", {
         dateStyle: "medium",
         timeStyle: "short",
         ...(timezone ? { timeZone: timezone } : {}),
-      }).format(new Date(value))
-    : "—";
+      }).format(date);
+  } catch {
+    // A bad site timezone must not prevent the whole screen from rendering.
+    return "—";
+  }
 }
 // datetime-local is explicitly displayed/entered in this device's timezone.
 export function localDate(value: string) {
   const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
   return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
     .toISOString()
     .slice(0, 16);

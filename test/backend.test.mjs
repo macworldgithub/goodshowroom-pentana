@@ -966,6 +966,54 @@ function client(
     }),
   });
 }
+test("proxy preserves empty upstream responses without converting success into 502", async () => {
+  for (const status of [204, 205, 304]) {
+    const handler = proxy(async () => new Response(null, { status }));
+    const response = await handler.GET(
+      incoming("customers", { headers: { Authorization: "Bearer token" } }),
+      route("customers"),
+    );
+    assert.equal(response.status, status);
+    assert.equal(await response.text(), "");
+  }
+});
+
+test("client handles empty success and unreadable or null error bodies with useful status", async () => {
+  const session = { access_token: "token" };
+  for (const status of [204, 205]) {
+    const helper = client(async () => new Response(null, { status }), session);
+    assert.equal(await helper.api("customers"), undefined);
+  }
+  for (const [body, status, expected] of [
+    ["<html>Gateway unavailable</html>", 503, 503],
+    ["", 200, 502],
+    ["null", 403, 403],
+  ]) {
+    let calls = 0;
+    const helper = client(async () => {
+      calls++;
+      return new Response(body, { status });
+    }, session);
+    await assert.rejects(
+      helper.api("customers", { method: "POST", body: {}, key: "stable" }),
+      (error) => error instanceof helper.ApiError && error.status === expected,
+    );
+    assert.equal(calls, 1, "An uncertain write must not be automatically retried");
+  }
+});
+
+test("date helpers tolerate invalid imported dates and site timezones", () => {
+  const helpers = moduleFrom("components/live-common.tsx");
+  assert.equal(helpers.timestamp("bad-date"), "—");
+  assert.equal(helpers.timestamp(null), "—");
+  assert.equal(helpers.timestamp("2026-10-16T10:00:00Z", "Invalid/Zone"), "—");
+  assert.equal(helpers.localDate("bad-date"), "");
+  const local = helpers.localDate("2026-10-16T10:00:00Z");
+  assert.match(local, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+  assert.equal(new Date(local).getTime(), Date.parse("2026-10-16T10:00:00Z"));
+  assert.notEqual(helpers.timestamp("2026-10-16T10:00:00Z", "UTC"), "—");
+});
+
 test("client obtains session token for every request and refreshes 401 once while preserving the write key", async () => {
   const calls = [];
   let refreshCount = 0;
