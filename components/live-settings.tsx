@@ -25,6 +25,7 @@ const extras = [
   "sales.assign_leads",
   "service.view_team",
   "service.assign_work",
+  "reports.read", "reports.view_group",
 ];
 type Brand = { id: string; name: string };
 type Audit = {

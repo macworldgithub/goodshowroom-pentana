@@ -83,6 +83,7 @@ export type Activity = {
   recordedAt: string;
   author: { id: string; fullName: string | null };
   taskId?: string;
+  repairOrderId?: string;
   messageId?: string;
   commandId?: string;
   journal?: {
@@ -133,7 +134,7 @@ export type Message = {
   created_by: string;
   subject: string;
   body: string;
-  channel: "email";
+  channel: "email" | "sms";
   status: string;
   version: number;
   transport?: string;
@@ -141,6 +142,8 @@ export type Message = {
   provider_id?: string;
   created_at: string;
   send_started_at?: string;
+  repair_order_id?: string | null;
+  appointment_id?: string | null;
 };
 export type Invitation = {
   id: string;
@@ -151,6 +154,79 @@ export type Invitation = {
   status: string;
   delivery_status: string;
   expires_at: string;
+};
+export type CustomerVehicle = {
+  id: string;
+  customer_id: string;
+  make: string;
+  model: string;
+  year: number;
+  registration: string;
+  vin: string;
+  odometer_km?: number | null;
+  next_service_date?: string | null;
+  open_campaigns?: string[];
+  notes?: string | null;
+  updated_at: string;
+};
+export type CustomerRelationship = {
+  id: string;
+  customer_id: string;
+  related_customer_id: string;
+  relation_type: string;
+  notes?: string | null;
+  relatedCustomer?: { id: string; fullName: string; email: string | null; phone: string | null } | null;
+  updated_at: string;
+};
+export type LoanCar = {
+  id: string;
+  site_id: string;
+  brand_id: string;
+  make: string;
+  model: string;
+  year: number;
+  registration: string;
+  rego: string;
+  status: "available" | "allocated" | "maintenance";
+  allocated_repair_order_id?: string | null;
+  allocated_customer_id?: string | null;
+  allocated_ro_id?: string | null;
+  allocated_ro_number?: string | null;
+  allocated_customer_name?: string | null;
+  allocated_at?: string | null;
+  notes?: string | null;
+};
+export type HandoverItem = {
+  id: string;
+  deal_id: string;
+  delivery_plan_id: string;
+  customer_id: string;
+  stock_id: string;
+  vehicle_label: string;
+  stock_label: string;
+  customer_name: string;
+  scheduled_delivery_at: string;
+  scheduled_at: string;
+  pdi_due_date: string;
+  pdi_status: "pending" | "booked" | "in_progress" | "completed";
+  pdi_appointment_id?: string | null;
+  pdi_technician?: string | null;
+  pdi_notes?: string | null;
+  accessories_status: "pending" | "in_progress" | "ready" | "parts_ordered" | "fitted";
+  accessories_notes?: string | null;
+  accessories_items?: string[];
+  first_service_status: "not_booked" | "booked";
+  first_service_booked: boolean;
+  first_service_scheduled_date?: string | null;
+  first_service_appointment_id?: string | null;
+  customer_service_preference?: {
+    mobility_need?: string;
+    preferred_channel?: string;
+  } | null;
+  notes?: string | null;
+  status: "active" | "completed" | "cancelled" | "handed_over";
+  customer?: { id: string; fullName: string; phone: string | null; email: string | null } | null;
+  risks?: { pdiRisk: boolean; firstServiceMissing: boolean; hoursUntilDelivery: number };
 };
 export const customerName = (
   customer: Pick<Customer, "first_name" | "last_name">,

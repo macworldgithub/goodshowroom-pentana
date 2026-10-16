@@ -57,7 +57,7 @@ export function CustomerMessages({
     transport?.mode === "smtp" &&
     (customer.integration_mode === "simulated" ||
       integrationMode === "simulated");
-  const canSend =
+  const canSendEmail =
     can("messages.send") &&
     !privacy.do_not_contact &&
     privacy.email === "granted" &&
@@ -66,6 +66,9 @@ export function CustomerMessages({
     !!transport &&
     ["smtp", "simulated"].includes(transport.mode) &&
     !simulationBlocked;
+  const canSendMessage=(message:Message)=>message.channel==='sms'
+    ? can('messages.send')&&!privacy.do_not_contact&&privacy.sms==='granted'&&!!customer.phone&&!privacyPending&&transport?.mode==='simulated'&&integrationMode==='simulated'
+    :canSendEmail;
   const hasSending = resource.data?.messages.some(
     (message) => message.status === "sending",
   );
@@ -80,7 +83,8 @@ export function CustomerMessages({
     onChanged();
   };
   const draftFields: Field[] = [
-    { name: "subject", label: "Subject", required: true, maxLength: 200 },
+    {name:'channel',label:'Channel',type:'select',options:[{value:'email',label:'Email'},{value:'sms',label:'SMS simulator'}]},
+    { name: "subject", label: "Subject (email)", required: true, maxLength: 200 },
     {
       name: "body",
       label: "Email body",
@@ -91,18 +95,18 @@ export function CustomerMessages({
   ];
   let fields: Field[] = [];
   if (selected?.action === "edit")
-    fields = draftFields.map((field) => ({
+    fields = draftFields.filter(field=>field.name!=="channel").map((field) => ({
       ...field,
       value:
         field.name === "subject"
           ? selected.message.subject
-          : selected.message.body,
+          : field.name === "channel" ? selected.message.channel : selected.message.body,
     }));
   if (selected?.action === "send")
     fields = [
       {
         name: "confirmed",
-        label: `Send this email to ${customer.email}?`,
+        label: `Explicitly submit this ${selected.message.channel} to ${selected.message.channel==='sms'?customer.phone:customer.email}?`,
         type: "checkbox",
       },
     ];
@@ -230,7 +234,7 @@ export function CustomerMessages({
               </div>
               <p className="my-3 whitespace-pre-wrap break-words text-sm">
                 {message.body}
-              </p>
+              </p>{message.repair_order_id&&can("service.read")&&<a className="text-sm text-brand" href={`/service/repair-orders/${message.repair_order_id}`}>Linked repair order</a>}
               <p className="text-xs text-slate-500">
                 {timestamp(message.created_at, site.timezone)} ·{" "}
                 {message.transport ?? "Draft"}
@@ -260,7 +264,7 @@ export function CustomerMessages({
                       </>
                     )}
                     <Button
-                      disabled={!canSend}
+                      disabled={!canSendMessage(message)}
                       onClick={() => setSelected({ message, action: "send" })}
                     >
                       Review and send
@@ -307,7 +311,7 @@ export function CustomerMessages({
       />
       {drafting && (
         <ActionDialog
-          title={`Email ${customerName(customer)}`}
+          title={`Message ${customerName(customer)}`}
           fields={draftFields}
           submitLabel="Save draft"
           onClose={() => setDrafting(false)}
@@ -315,7 +319,7 @@ export function CustomerMessages({
             await api(`customers/${customer.id}/messages`, {
               method: "POST",
               key,
-              body: { ...values, siteId: site.id, channel: "email" },
+              body: { ...values, siteId: site.id },
             });
             changed();
             setNotice("Draft saved. Nothing has been sent.");

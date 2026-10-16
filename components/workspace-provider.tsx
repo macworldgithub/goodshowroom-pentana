@@ -65,19 +65,29 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }, [router]);
   useEffect(() => {
     const requests = generation;
-    void Promise.resolve().then(refresh);
-    const { data } = createClient().auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT") {
-        requests.current++;
-        setContext(null);
-        router.replace("/login");
+    let active = true;
+    let subscription: { unsubscribe: () => void } | undefined;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      try {
+        subscription = createClient().auth.onAuthStateChange((event) => {
+          if (event === "SIGNED_OUT") {
+            requests.current++;
+            setContext(null);
+            router.replace("/login");
+          }
+        }).data.subscription;
+        void refresh();
+      } catch (cause) {
+        setError(errorMessage(cause));
       }
     });
     const onFocus = () => void refresh();
     window.addEventListener("focus", onFocus);
     return () => {
+      active = false;
       requests.current++;
-      data.subscription.unsubscribe();
+      subscription?.unsubscribe();
       window.removeEventListener("focus", onFocus);
     };
   }, [refresh, router]);

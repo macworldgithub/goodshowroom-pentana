@@ -12,8 +12,8 @@ export default function Page() {
   const [error, setError] = useState("");
   useEffect(() => {
     let active = true;
-    createClient()
-      .auth.getUser()
+    Promise.resolve()
+      .then(() => createClient().auth.getUser())
       .then(({ data, error }) => {
         if (active) {
           setReady(!!data.user && !error);
@@ -22,6 +22,9 @@ export default function Page() {
               "Open a valid recovery or invitation link before setting your password.",
             );
         }
+      })
+      .catch((cause) => {
+        if (active) setError(errorMessage(cause));
       });
     return () => {
       active = false;

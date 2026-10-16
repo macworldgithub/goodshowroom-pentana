@@ -10,7 +10,7 @@ import {
 import { api, errorMessage } from "@/lib/backend";
 import type { Page } from "@/lib/backend-types";
 import { Button, FormField, inputClass, Modal } from "./ui";
-export function useResource<T>(path: string | null) {
+export function useResource<T>(path: string | null, refreshMs = 0) {
   const [snapshot, setSnapshot] = useState<{
     path: string;
     revision: number;
@@ -19,6 +19,11 @@ export function useResource<T>(path: string | null) {
   }>();
   const [revision, update] = useState(0);
   const reload = useCallback(() => update((value) => value + 1), []);
+  useEffect(() => {
+    if (!path || refreshMs < 1000) return;
+    const timer = setInterval(() => { if (document.visibilityState === "visible") reload(); }, refreshMs);
+    return () => clearInterval(timer);
+  }, [path, refreshMs, reload]);
   useEffect(() => {
     const controller = new AbortController();
     let active = true;

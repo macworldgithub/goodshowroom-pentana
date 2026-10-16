@@ -210,7 +210,7 @@ export function LiveStock() {
             label: "Availability",
             type: "select" as const,
             value: vehicle.status,
-            options: ["available", "sold", "unavailable"].map((value) => ({
+            options: ["available", "incoming", "sold", "unavailable"].map((value) => ({
               value,
               label: value.charAt(0).toUpperCase() + value.slice(1),
             })),
@@ -309,7 +309,7 @@ export function LiveStock() {
                 }}
               >
                 <option value="">All availability</option>
-                {["available", "reserved", "sold", "unavailable"].map(
+                {["available", "incoming", "reserved", "sold", "unavailable"].map(
                   (value) => (
                     <option key={value} value={value}>
                       {value}

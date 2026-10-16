@@ -43,7 +43,8 @@ type Queue = {
     vehicle: string;
     starts_at: string;
     ends_at: string;
-    status: string;
+    status: string; assigned_to:string; advisorName?:string|null;
+    workflowStatus?:string; repairOrderId?:string;
     resource_id?: string;
     resource: { id: string; name: string } | null;
     bucket: string;
@@ -69,15 +70,20 @@ export function AppointmentQueue({
   const [view, setView] = useState("own");
   const [bucket, setBucket] = useState("all");
   const [offset, setOffset] = useState(0);
+  const [range,setRange]=useState("day");
+  const [advisorId,setAdvisorId]=useState("");
   const resource = useResource<Queue>(
     `service/${dailyWork ? "my-day" : "diary"}?${query({
       siteId: site.id,
+      range: dailyWork?undefined:range,
+      advisorId:!dailyWork&&view==="team"?advisorId||undefined:undefined,
       date: selectedDate || date || undefined,
       view: can("service.view_team") ? view : "own",
       bucket: dailyWork ? bucket : undefined,
       offset,
       limit: 20,
     })}`,
+    15000,
   );
   const reload = resource.reload;
   useEffect(() => {
@@ -87,12 +93,12 @@ export function AppointmentQueue({
     <Panel className="mb-6">
       <PanelHeading
         title={
-          dailyWork ? "Service appointments in My Day" : "Daily Service diary"
+          dailyWork ? "Service appointments in My Day" : "Service diary"
         }
         description={
           dailyWork
             ? "Open appointments through the selected day. Counts are separate from follow-ups; Service team access is checked independently."
-            : "Appointments overlapping this site-local date, including unallocated legacy bookings."
+            : "Appointments in the selected site-local day or Monday-to-Sunday week, including unallocated bookings."
         }
       />
       <div className="grid gap-4 p-5 sm:grid-cols-3">
@@ -126,6 +132,8 @@ export function AppointmentQueue({
             )}
           </select>
         </label>
+        {!dailyWork&&view==='team'&&can('service.view_team')&&<label className="text-sm font-semibold">Advisor<select className={inputClass} value={advisorId} onChange={e=>{setAdvisorId(e.target.value);setOffset(0);}}><option value="">All permitted advisors</option>{Array.from(new Map(resource.data?.appointments.map(a=>[a.assigned_to,a.advisorName??`Advisor ${a.assigned_to.slice(0,8)}`])??[])).map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>}
+        {!dailyWork&&<label className="text-sm font-semibold">Diary range<select className={inputClass} value={range} onChange={e=>{setRange(e.target.value);setOffset(0);}}><option value="day">Selected day</option><option value="week">Selected week</option></select></label>}
         {dailyWork && (
           <label className="text-sm font-semibold">
             Show
@@ -152,7 +160,7 @@ export function AppointmentQueue({
         <div className="mx-5 mb-4 grid gap-3 sm:grid-cols-3">
           {[
             ["Appointments", resource.data.totals.all],
-            ["On selected day", resource.data.totals.today],
+            [dailyWork?"On selected day":"In selected range", resource.data.totals.today],
             [
               dailyWork ? "Unresolved earlier" : "Unallocated",
               dailyWork
@@ -181,9 +189,9 @@ export function AppointmentQueue({
         {resource.data?.appointments.map((a) => (
           <article key={a.id} className="p-5">
             <div className="flex flex-wrap items-center gap-3">
-              <h3 className="font-bold">{a.title}</h3>
+              <h3 className="font-bold">{a.title}</h3>{a.advisorName&&<span className="text-xs text-slate-500">{a.advisorName}</span>}
               <Badge tone={a.status === "confirmed" ? "green" : "slate"}>
-                {a.status.replace("_", " ")}
+                {(a.workflowStatus??a.status).replaceAll("_", " ")}
               </Badge>
               {!a.resource_id && <Badge tone="amber">Needs resource</Badge>}
             </div>

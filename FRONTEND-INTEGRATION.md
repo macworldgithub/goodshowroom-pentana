@@ -1,5 +1,39 @@
 # Frontend and backend integration through Step 3
 
+Current scope review: the Service RO screen now queues check-in, authority,
+workshop/road-test progress, promise changes, assignment and collection. Recovery,
+loan-car fixtures, linked customer drafts, first-service/final handover and My Day
+risks are connected. Reports use explicit report grants and authorised sites;
+local templates/rules clearly identify that no AI provider is configured.
+Customer records expose simulated vehicles/relationships and activity-mirror states.
+See ../goodshowroom-pentana-backend/LOCAL-SCOPE-REVIEW.md for source ownership,
+configuration and remaining browser/live acceptance gates.
+
+Local setup: run `npm run setup:local` in `goodshowroom-pentana` when `.env.local`
+is missing and the sibling backend `.env` is configured. The helper copies only
+the Supabase public URL and validated anon/publishable key, plus the local backend
+URL. It refuses server secret keys and preserves existing `.env.local` files.
+Restart the frontend after configuration changes; public settings are bundled by
+Next.js. Alternatively fill `.env.local` from `.env.example` manually. The local
+configuration file is ignored by Git. Missing configuration now appears in the
+workspace/password setup error UI rather than escaping from a React effect.
+
+## 16 October 2026 update — repair orders
+
+Service appointments now link to `/service/repair-orders`, with an appointment
+filter, paginated list and board, detail/history, queued simulated transitions and
+customer authority notes. A persistent command queue exposes pending, retrying,
+rejected, failed and review outcomes; ADMIN can process/review simulation requests.
+Customer 360 has repair-order records and timeline links; My Day has an independent
+Service exception queue. Simulation preparation appears only when enabled by the
+backend. Source vehicle IDs and financial context are explicitly unavailable.
+
+Restart the backend to create MongoDB indexes and start the simulator worker.
+No new environment variables. See
+[REPAIR-ORDERS.md](../goodshowroom-pentana-backend/REPAIR-ORDERS.md) and
+[SCOPE-PROGRESS.md](../goodshowroom-pentana-backend/SCOPE-PROGRESS.md) for current
+scope and acceptance gaps. The historical Step 3 notes below are retained.
+
 The active workspace now uses real backend data. My Day, Customer 360, dealership
 settings, invitations and Sync operations no longer show demo records or simulated
 local saves. Existing styling is retained. Sales/Service desks and reporting are

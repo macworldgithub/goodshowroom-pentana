@@ -25,6 +25,7 @@ import {
 } from "./ui";
 import { useWorkspace } from "./workspace-provider";
 import { LiveServiceDiary, type Slot } from "./live-service-diary";
+import { SimulateRepairOrder } from "./live-repair-orders";
 type Appointment = {
   resource_id?: string;
   id: string;
@@ -56,6 +57,7 @@ export function LiveServiceAppointments() {
     appointments: Appointment[];
     pagination: Page;
     visibility: string;
+    repairOrderSimulationEnabled: boolean;
   }>(
     `service/appointments?${query({ siteId: site.id, status: status || undefined, offset, limit: 20 })}`,
   );
@@ -220,6 +222,7 @@ export function LiveServiceAppointments() {
           ) : undefined
         }
       />
+      <Link className="mb-5 inline-block text-sm font-semibold text-brand hover:underline" href="/service/repair-orders">Open repair-order list and board</Link>
       <LiveServiceDiary
         refresh={diaryRevision}
         onBook={(slot) => setEditor({ kind: "new", slot })}
@@ -312,6 +315,8 @@ export function LiveServiceAppointments() {
                   >
                     Open customer
                   </Link>
+                  <Link className="ml-4 text-sm font-semibold text-brand hover:underline" href={`/service/repair-orders?appointmentId=${item.id}`}>Repair orders</Link>
+                  {resource.data?.repairOrderSimulationEnabled && !["cancelled", "no_show"].includes(item.status) && <SimulateRepairOrder customerId={item.customer_id} appointmentId={item.id} promisedAt={item.ends_at} />}
                 </div>
                 {open && can("service.write") && (
                   <div className="flex gap-2">

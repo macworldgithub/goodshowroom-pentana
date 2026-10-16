@@ -792,7 +792,29 @@ export function LeadsView() {
                       {c.interest}
                     </td>
                     <td className="px-5 py-4 text-sm text-slate-600">
-                      {role === "Admin" ? <select aria-label={`Assign ${c.name}`} value={c.owner} onChange={(event) => { const owner = event.target.value; setList((items) => items.map((item) => item.id === c.id ? { ...item, owner } : item)); setNotice(`${c.name} assigned to ${owner}.`); }} className="h-9 rounded-lg border border-slate-300 bg-white px-2 text-xs font-semibold"><option>Maya Chen</option><option>Daniel Reed</option><option>Jordan Lee</option><option>Unassigned</option></select> : c.owner}
+                      {role === "Admin" ? (
+                        <select
+                          aria-label={`Assign ${c.name}`}
+                          value={c.owner}
+                          onChange={(event) => {
+                            const owner = event.target.value;
+                            setList((items) =>
+                              items.map((item) =>
+                                item.id === c.id ? { ...item, owner } : item,
+                              ),
+                            );
+                            setNotice(`${c.name} assigned to ${owner}.`);
+                          }}
+                          className="h-9 rounded-lg border border-slate-300 bg-white px-2 text-xs font-semibold"
+                        >
+                          <option>Maya Chen</option>
+                          <option>Daniel Reed</option>
+                          <option>Jordan Lee</option>
+                          <option>Unassigned</option>
+                        </select>
+                      ) : (
+                        c.owner
+                      )}
                     </td>
                     <td className="px-5 py-4">
                       <p className="text-sm font-medium text-slate-800">
@@ -838,7 +860,10 @@ export function CustomersView() {
     () =>
       list.filter(
         (c) =>
-          (role === "Admin" || (role === "Sales" ? c.owner === "Maya Chen" : Boolean(c.pentanaId))) &&
+          (role === "Admin" ||
+            (role === "Sales"
+              ? c.owner === "Maya Chen"
+              : Boolean(c.pentanaId))) &&
           (source === "All sources" || c.source === source) &&
           `${c.name} ${c.email} ${c.phone} ${c.pentanaId}`
             .toLowerCase()
@@ -849,14 +874,34 @@ export function CustomersView() {
   return (
     <>
       <PageHeader
-        eyebrow={role === "Admin" ? "Sales + Service records" : role === "Sales" ? "Assigned customer book" : "Service customer book"}
-        title={role === "Admin" ? "All customers" : role === "Sales" ? "Assigned customers" : "Service customers"}
-        description={role === "Admin" ? "Access authorised Sales and Service records, assignments and the shared customer thread." : role === "Sales" ? "Manage your assigned customers, conversations, follow-ups and opportunities." : "Manage service customers, booking conversations, repair-order updates and handovers."}
+        eyebrow={
+          role === "Admin"
+            ? "Sales + Service records"
+            : role === "Sales"
+              ? "Assigned customer book"
+              : "Service customer book"
+        }
+        title={
+          role === "Admin"
+            ? "All customers"
+            : role === "Sales"
+              ? "Assigned customers"
+              : "Service customers"
+        }
+        description={
+          role === "Admin"
+            ? "Access authorised Sales and Service records, assignments and the shared customer thread."
+            : role === "Sales"
+              ? "Manage your assigned customers, conversations, follow-ups and opportunities."
+              : "Manage service customers, booking conversations, repair-order updates and handovers."
+        }
         actions={
-          role !== "Service" ? <Button onClick={() => setOpen(true)}>
-            <Icon name="plus" className="h-4 w-4" />
-            Add customer
-          </Button> : undefined
+          role !== "Service" ? (
+            <Button onClick={() => setOpen(true)}>
+              <Icon name="plus" className="h-4 w-4" />
+              Add customer
+            </Button>
+          ) : undefined
         }
       />
       <Panel>

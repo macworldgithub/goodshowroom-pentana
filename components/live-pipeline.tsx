@@ -86,6 +86,7 @@ function EnquiryHistory({
     pagination: Page;
   }>(
     `sales/pipeline/${lead.id}/history?${query({ siteId: site.id, offset, limit: 10 })}`,
+    15000,
   );
   return (
     <Modal

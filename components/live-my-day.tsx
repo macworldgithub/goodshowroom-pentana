@@ -14,7 +14,9 @@ import {
   StatCard,
 } from "./ui";
 import { TaskCard } from "./live-tasks";
+import { HandoverRiskQueue } from "./live-deliveries";
 import { AppointmentQueue } from "./live-service-diary";
+import { RepairOrderList } from "./live-repair-orders";
 type Day = {
   day: { date: string; timezone: string };
   view: string;
@@ -192,6 +194,8 @@ export function LiveMyDay() {
           selectedDate={date || resource.data?.day.date}
         />
       )}
+      {can("service.read") && <RepairOrderList key={`ro-${date || resource.data?.day.date || "today"}`} queue date={date || resource.data?.day.date} />}
+      {can("deliveries.read") && <HandoverRiskQueue/>}
     </>
   );
 }

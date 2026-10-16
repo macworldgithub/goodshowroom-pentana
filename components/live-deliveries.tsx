@@ -10,6 +10,9 @@ import {
   ResourceState,
   timestamp,
   useResource,
+  useDirectory,
+  Feedback,
+  type Field,
 } from "./live-common";
 import {
   Badge,
@@ -386,8 +389,300 @@ export function LiveDeliveryDialog({
   );
 }
 
+type HandoverRow = {
+  id: string;
+  version: number;
+  customer_id: string;
+  vehicle_label: string;
+  scheduled_delivery_at: string;
+  pdi_due_date: string;
+  pdi_status: string;
+  pdi_owner?: string;
+  pdi_notes?: string;
+  accessories_status: string;
+  accessories_notes?: string;
+  first_service_status: string;
+  first_service_appointment_id?: string;
+  customer_service_preference?: { preferred_channel: string; notes: string };
+  risks: { pdiRisk: boolean; firstServiceMissing: boolean };
+};
+export function ServiceHandoverLane() {
+  const { site, can } = useWorkspace();
+  const [offset, setOffset] = useState(0);
+  const [action, setAction] = useState<{
+    kind: string;
+    item: HandoverRow;
+  } | null>(null);
+  const resource = useResource<{ handovers: HandoverRow[]; pagination: Page }>(
+    `service/handover-lane?${query({ siteId: site.id, offset, limit: 10 })}`,
+  );
+  const bays = useDirectory<{ id: string; name: string; active: boolean }>(
+    action?.kind === "first-service-booking"
+      ? `service/resources?siteId=${site.id}`
+      : null,
+    "resources",
+  );
+  const fields: Field[] =
+    action?.kind === "pdi"
+      ? [
+          {
+            name: "status",
+            label: "PDI status",
+            type: "select",
+            value: action.item.pdi_status,
+            options: ["pending", "booked", "in_progress", "completed"].map(
+              (value) => ({ value, label: value.replaceAll("_", " ") }),
+            ),
+          },
+          {
+            name: "dueAt",
+            label: "PDI due (device timezone)",
+            type: "datetime-local",
+            value: action.item.pdi_due_date
+              ? localDate(action.item.pdi_due_date)
+              : "",
+          },
+          {
+            name: "ownerId",
+            label: "PDI owner staff UUID (optional)",
+            required: false,
+            value: action.item.pdi_owner ?? "",
+          },
+          {
+            name: "notes",
+            label: "Inspection evidence",
+            type: "textarea",
+            value: action.item.pdi_notes ?? "",
+            required: false,
+          },
+        ]
+      : action?.kind === "accessories"
+        ? [
+            {
+              name: "status",
+              label: "Accessories preparation",
+              type: "select",
+              value: action.item.accessories_status,
+              options: ["pending", "in_progress", "ready"].map((value) => ({
+                value,
+                label: value.replaceAll("_", " "),
+              })),
+            },
+            {
+              name: "notes",
+              label: "Preparation notes",
+              type: "textarea",
+              value: action.item.accessories_notes ?? "",
+              required: false,
+            },
+          ]
+        : action?.kind === "first-service-booking"
+          ? [
+              {
+                name: "startsAt",
+                label: "First-service start (device timezone)",
+                type: "datetime-local",
+              },
+              {
+                name: "endsAt",
+                label: "First-service end (device timezone)",
+                type: "datetime-local",
+              },
+              {
+                name: "resourceId",
+                label: "Workshop resource",
+                type: "select",
+                options: bays.items
+                  .filter((b) => b.active)
+                  .map((b) => ({ value: b.id, label: b.name })),
+              },
+              {
+                name: "notes",
+                label: "Booking notes",
+                type: "textarea",
+                required: false,
+              },
+            ]
+          : action?.kind === "preferences"
+            ? [
+                {
+                  name: "preferred_channel",
+                  label: "Preferred contact channel",
+                  type: "select",
+                  value:
+                    action.item.customer_service_preference
+                      ?.preferred_channel ?? "email",
+                  options: ["email", "sms", "call"].map((value) => ({
+                    value,
+                    label: value,
+                  })),
+                },
+                {
+                  name: "notes",
+                  label: "Contact/mobility preferences",
+                  type: "textarea",
+                  required: false,
+                },
+              ]
+            : [
+                {
+                  name: "notes",
+                  label: "Final handover evidence",
+                  type: "textarea",
+                },
+              ];
+  return (
+    <Panel className="mb-5">
+      <PanelHeading
+        title="Sales-to-Service handover"
+        description="PDI and accessories extend the existing delivery preparation checklist. First-service bookings use workshop hours and conflict checks."
+      />
+      <div className="space-y-4 p-5">
+        <ResourceState resource={resource} />
+        <Button variant="secondary" onClick={resource.reload}>
+          Refresh handovers
+        </Button>
+        {resource.data?.handovers.map((item) => (
+          <article key={item.id} className="rounded-xl border p-4">
+            <h3 className="font-bold">{item.vehicle_label}</h3>
+            <p>
+              Delivery: {timestamp(item.scheduled_delivery_at, site.timezone)}
+            </p>
+            <p>
+              PDI: {item.pdi_status} ? Due{" "}
+              {timestamp(item.pdi_due_date, site.timezone)} ? Accessories:{" "}
+              {item.accessories_status}
+            </p>
+            <p>First service: {item.first_service_status}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link
+                className="mr-3 text-brand"
+                href={`/customers/${item.customer_id}`}
+              >
+                Customer
+              </Link>
+              {can("deliveries.prepare") && (
+                <>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setAction({ kind: "pdi", item })}
+                  >
+                    Update PDI
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setAction({ kind: "accessories", item })}
+                  >
+                    Accessories
+                  </Button>
+                </>
+              )}
+              {can("service.write") && item.risks.firstServiceMissing && (
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    setAction({ kind: "first-service-booking", item })
+                  }
+                >
+                  Book first service
+                </Button>
+              )}
+              {can("deliveries.write") && (
+                <>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setAction({ kind: "preferences", item })}
+                  >
+                    Contact preferences
+                  </Button>
+                  <Button onClick={() => setAction({ kind: "complete", item })}>
+                    Final handover
+                  </Button>
+                </>
+              )}
+            </div>
+          </article>
+        ))}
+        {resource.data?.handovers.length === 0 && (
+          <p>
+            No active handovers. Create a delivery plan from an approved
+            proposal.
+          </p>
+        )}
+        <Pager
+          page={resource.data?.pagination}
+          offset={offset}
+          setOffset={setOffset}
+        />
+      </div>
+      {action && (
+        <ActionDialog
+          title={action.kind.replaceAll("-", " ")}
+          description="Application-owned handover preparation. Booking acceptance remains local/simulated."
+          fields={fields}
+          onClose={() => setAction(null)}
+          onSubmit={async (values, key) => {
+            const body: Record<string, unknown> = {
+              ...values,
+              siteId: site.id,
+              version: action.item.version,
+            };
+            for (const name of ["startsAt", "endsAt", "dueAt"])
+              if (values[name])
+                body[name] = new Date(String(values[name])).toISOString();
+            await api(
+              `service/handover-lane/${action.item.id}/${action.kind}`,
+              { method: "POST", key, body },
+            );
+            resource.reload();
+          }}
+        >
+          <Feedback error={bays.error} />
+        </ActionDialog>
+      )}
+    </Panel>
+  );
+}
+export function HandoverRiskQueue() {
+  const { site } = useWorkspace();
+  const [offset, setOffset] = useState(0);
+  const resource = useResource<{ handovers: HandoverRow[]; pagination: Page }>(
+    `service/handover-lane?${query({ siteId: site.id, riskOnly: "true", offset, limit: 10 })}`,
+  );
+  return (
+    <Panel className="mb-5">
+      <PanelHeading
+        title="Handover risks"
+        description="Deliveries missing PDI or a first-service booking within your authorised delivery view."
+      />
+      <div className="space-y-3 p-5">
+        <ResourceState resource={resource} />
+        {resource.data?.handovers.map((h) => (
+          <p key={h.id}>
+            <Link className="text-brand" href="/deliveries">
+              {h.vehicle_label}
+            </Link>{" "}
+            ? {timestamp(h.scheduled_delivery_at, site.timezone)} ?{" "}
+            {h.risks.pdiRisk ? "PDI incomplete " : ""}
+            {h.risks.firstServiceMissing ? "First service missing" : ""}
+          </p>
+        ))}
+        {resource.data?.handovers.length === 0 && (
+          <p>No current handover risks.</p>
+        )}
+        <Pager
+          page={resource.data?.pagination}
+          offset={offset}
+          setOffset={setOffset}
+        />
+      </div>
+    </Panel>
+  );
+}
+
 export function LiveDeliveries() {
   const { site, can } = useWorkspace();
+  const [tab, setTab] = useState<"plans" | "handover">("plans");
   const [status, setStatus] = useState("planned");
   const [offset, setOffset] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -399,125 +694,157 @@ export function LiveDeliveries() {
   return (
     <>
       <PageHeader
-        title="Handover lane"
+        title="Handover lane & vehicle delivery"
         eyebrow={site.name}
-        description="Prepare vehicles, review delivery checks and track readiness at your site."
+        description="Prepare vehicles, review delivery checks, and connect sales delivery with service desk introduction."
         actions={
           <Button variant="secondary" onClick={resource.reload}>
             Refresh
           </Button>
         }
       />
-      {!can("deliveries.read") && (
-        <Panel>
-          <EmptyState
-            title="Delivery access required"
-            description="Your current membership does not allow this delivery view."
-          />
-        </Panel>
-      )}
-      {can("deliveries.read") && (
+      <div className="flex border-b border-slate-200 px-1 mb-5 gap-4">
+        <button
+          onClick={() => setTab("plans")}
+          className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${
+            tab === "plans"
+              ? "border-brand text-brand"
+              : "border-transparent text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          Delivery checklist plans
+        </button>
+        <button
+          onClick={() => setTab("handover")}
+          className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${
+            tab === "handover"
+              ? "border-brand text-brand"
+              : "border-transparent text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          Sales-to-Service Handover lane
+        </button>
+      </div>
+
+      {tab === "handover" && <ServiceHandoverLane />}
+
+      {tab === "plans" && (
         <>
-          <Panel className="mb-5">
-            <PanelHeading
-              title="Delivery plans"
-              description={
-                can("deliveries.write")
-                  ? "Plan deliveries from an approved proposal in Sales desk → Deals → Delivery plan."
-                  : "Confirm vehicle preparation for deliveries within your site and brand access."
-              }
-            />
-            <div className="p-5">
-              <label className="text-sm font-semibold text-slate-600">
-                Show
-                <select
-                  className={inputClass}
-                  value={status}
-                  onChange={(event) => {
-                    setStatus(event.target.value);
-                    setOffset(0);
-                  }}
-                >
-                  <option value="planned">Planned deliveries</option>
-                  <option value="cancelled">Cancelled plans</option>
-                  <option value="">All plans</option>
-                </select>
-              </label>
-            </div>
-          </Panel>
-          <ResourceState resource={resource} />
-          {resource.data && !resource.data.deliveries.length && (
+          {!can("deliveries.read") && (
             <Panel>
               <EmptyState
-                icon="delivery"
-                title="No delivery plans in this view"
-                description="Delivery plans appear here after they are created against approved deals."
+                title="Delivery access required"
+                description="Your current membership does not allow this delivery view."
               />
             </Panel>
           )}
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {resource.data?.deliveries.map((plan) => (
-              <Panel key={plan.id} className="p-5">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <Badge tone={plan.readiness.ready ? "green" : "amber"}>
-                    {plan.status === "cancelled"
-                      ? "Cancelled"
-                      : plan.readiness.ready
-                        ? "Ready"
-                        : "Needs attention"}
-                  </Badge>
-                  <span className="text-xs text-slate-400">
-                    {plan.readiness.completedItems}/{plan.readiness.totalItems}{" "}
-                    checks
-                  </span>
-                </div>
-                <h2 className="mt-4 break-words text-lg font-bold text-slate-900">
-                  {plan.stock_label}
-                </h2>
-                <p className="mt-2 text-sm font-semibold text-slate-600">
-                  {timestamp(plan.scheduled_at, site.timezone)}
-                </p>
-                {plan.readiness.overdue && (
-                  <p className="mt-2 text-xs font-bold text-amber-700">
-                    Past planned delivery time
-                  </p>
-                )}
-                <p className="mt-3 text-sm leading-6 text-slate-500">
-                  {plan.readiness.ready
-                    ? "All checks are confirmed and the approved vehicle is reserved."
-                    : plan.readiness.blockers[0]}
-                </p>
-                <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setSelected(plan.id)}
-                  >
-                    View checklist
-                  </Button>
-                  <Link
-                    className="text-sm font-semibold text-brand hover:underline"
-                    href={`/customers/${plan.customer_id}`}
-                  >
-                    Open customer
-                  </Link>
+          {can("deliveries.read") && (
+            <>
+              <Panel className="mb-5">
+                <PanelHeading
+                  title="Delivery plans"
+                  description={
+                    can("deliveries.write")
+                      ? "Plan deliveries from an approved proposal in Sales desk → Deals → Delivery plan."
+                      : "Confirm vehicle preparation for deliveries within your site and brand access."
+                  }
+                />
+                <div className="p-5">
+                  <label className="text-sm font-semibold text-slate-600">
+                    Show
+                    <select
+                      className={inputClass}
+                      value={status}
+                      onChange={(event) => {
+                        setStatus(event.target.value);
+                        setOffset(0);
+                      }}
+                    >
+                      <option value="planned">Planned deliveries</option>
+                      <option value="cancelled">Cancelled plans</option>
+                      <option value="handed_over">Handed over</option>
+                      <option value="">All plans</option>
+                    </select>
+                  </label>
                 </div>
               </Panel>
-            ))}
-          </div>
-          <Pager
-            page={resource.data?.pagination}
-            offset={offset}
-            setOffset={setOffset}
-          />
+              <ResourceState resource={resource} />
+              {resource.data && !resource.data.deliveries.length && (
+                <Panel>
+                  <EmptyState
+                    icon="delivery"
+                    title="No delivery plans in this view"
+                    description="Delivery plans appear here after they are created against approved deals."
+                  />
+                </Panel>
+              )}
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {resource.data?.deliveries.map((plan) => (
+                  <Panel key={plan.id} className="p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <Badge tone={plan.readiness.ready ? "green" : "amber"}>
+                        {plan.status === "handed_over"
+                          ? "Handed over"
+                          : plan.status === "cancelled"
+                            ? "Cancelled"
+                            : plan.readiness.ready
+                              ? "Ready"
+                              : "Needs attention"}
+                      </Badge>
+                      <span className="text-xs text-slate-400">
+                        {plan.readiness.completedItems}/
+                        {plan.readiness.totalItems} checks
+                      </span>
+                    </div>
+                    <h2 className="mt-4 break-words text-lg font-bold text-slate-900">
+                      {plan.stock_label}
+                    </h2>
+                    <p className="mt-2 text-sm font-semibold text-slate-600">
+                      {timestamp(plan.scheduled_at, site.timezone)}
+                    </p>
+                    {plan.readiness.overdue && (
+                      <p className="mt-2 text-xs font-bold text-amber-700">
+                        Past planned delivery time
+                      </p>
+                    )}
+                    <p className="mt-3 text-sm leading-6 text-slate-500">
+                      {plan.readiness.ready
+                        ? "All checks are confirmed and the approved vehicle is reserved."
+                        : plan.readiness.blockers[0]}
+                    </p>
+                    <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
+                      <Button
+                        variant="secondary"
+                        onClick={() => setSelected(plan.id)}
+                      >
+                        View checklist
+                      </Button>
+                      <Link
+                        className="text-sm font-semibold text-brand hover:underline"
+                        href={`/customers/${plan.customer_id}`}
+                      >
+                        Open customer
+                      </Link>
+                    </div>
+                  </Panel>
+                ))}
+              </div>
+              <Pager
+                page={resource.data?.pagination}
+                offset={offset}
+                setOffset={setOffset}
+              />
+            </>
+          )}
+          {selected && (
+            <LiveDeliveryDialog
+              key={selected}
+              deliveryId={selected}
+              onClose={() => setSelected(null)}
+              onSaved={resource.reload}
+            />
+          )}
         </>
-      )}
-      {selected && (
-        <LiveDeliveryDialog
-          key={selected}
-          deliveryId={selected}
-          onClose={() => setSelected(null)}
-          onSaved={resource.reload}
-        />
       )}
     </>
   );

@@ -2,6 +2,94 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import ts from "typescript";
+
+test("Supabase browser configuration reports the current project path and uses public settings", () => {
+  const missing = moduleFrom("lib/supabase/client.ts", {
+    require: () => ({
+      createBrowserClient: () =>
+        assert.fail("Missing configuration must not initialize Supabase"),
+    }),
+  });
+  assert.throws(
+    () => missing.createClient(),
+    /goodshowroom-pentana\/\.env\.local/,
+  );
+  const client = {};
+  const configured = moduleFrom("lib/supabase/client.ts", {
+    env: {
+      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "public-test-key",
+    },
+    require: () => ({
+      createBrowserClient: (url, key) => {
+        assert.equal(url, "https://example.supabase.co");
+        assert.equal(key, "public-test-key");
+        return client;
+      },
+    }),
+  });
+  assert.equal(configured.createClient(), client);
+});
+
+test("workspace displays missing Supabase configuration without an uncaught effect error", async () => {
+  const effects = [];
+  const updates = [];
+  let state = 0;
+  const workspace = moduleFrom("components/workspace-provider.tsx", {
+    require: (id) => {
+      if (id === "react")
+        return {
+          createContext: () => ({}),
+          useContext: () => null,
+          useCallback: (fn) => fn,
+          useRef: (value) => ({ current: value }),
+          useEffect: (fn) => effects.push(fn),
+          useState: (value) => {
+            const index = state++;
+            return [value, (next) => updates.push({ index, value: next })];
+          },
+        };
+      if (id === "react/jsx-runtime")
+        return {
+          jsx: (type, props) => ({ type, props }),
+          jsxs: (type, props) => ({ type, props }),
+        };
+      if (id === "next/navigation")
+        return {
+          useRouter: () => ({
+            replace: () =>
+              assert.fail("Do not redirect on configuration errors"),
+          }),
+        };
+      if (id === "@/lib/supabase/client")
+        return {
+          createClient: () => {
+            throw new Error("Supabase configuration missing");
+          },
+        };
+      if (id === "@/lib/backend")
+        return { errorMessage: (cause) => cause.message };
+      return {};
+    },
+  });
+  const previousWindow = globalThis.window;
+  globalThis.window = { addEventListener() {}, removeEventListener() {} };
+  try {
+    workspace.WorkspaceProvider({ children: null });
+    const cleanup = effects[0]();
+    await Promise.resolve();
+    assert.ok(
+      updates.some(
+        (update) => update.value === "Supabase configuration missing",
+      ),
+    );
+    cleanup();
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
 function moduleFrom(file, dependencies = {}) {
   const code = ts.transpileModule(readFileSync(file, "utf8"), {
     compilerOptions: {
@@ -21,7 +109,7 @@ function moduleFrom(file, dependencies = {}) {
   return compiled.exports;
 }
 
-function salesDialog(file, exportName, state, transport, props) {
+function salesDialog(file, exportName, state, transport, props, resourceData) {
   let index = 0;
   const jsx = (type, props) => ({ type, props });
   const view = moduleFrom(file, {
@@ -43,14 +131,27 @@ function salesDialog(file, exportName, state, transport, props) {
             site: { id: "site-id", name: "Site", timezone: "Australia/Sydney" },
             context: { user: { id: "staff-id" } },
             can: (permission) =>
-              ["sales.write", "tasks.write"].includes(permission),
+              [
+                "sales.write",
+                "tasks.write",
+                "service.write",
+                "service.assign_work",
+                "messages.write",
+              ].includes(permission),
           }),
         };
       if (id === "./live-common")
         return {
           ActionDialog: "ActionDialog",
           localDate: (value) => String(value).slice(0, 16),
-          useResource: () => ({ reload: () => {} }),
+          timestamp: (value) => value ?? "",
+          useResource: (path) => ({
+            data:
+              typeof resourceData === "function"
+                ? resourceData(path)
+                : resourceData,
+            reload: () => {},
+          }),
           useDirectory: () => ({
             items: [],
             error: "",
@@ -75,47 +176,269 @@ function salesDialog(file, exportName, state, transport, props) {
   return dialog;
 }
 
+test("RO check-in and collection forms use queued versioned actions and never edit payment context", async () => {
+  const calls = [];
+  const transport = client(
+    async (url, init) => {
+      calls.push({ url, init });
+      return Response.json({});
+    },
+    { access_token: "test-token" },
+  );
+  const row = {
+    id: "ro-id",
+    number: "SIM-RO",
+    customer_id: "customer-id",
+    appointment_id: "appointment-id",
+    vehicle: "Test vehicle",
+    assigned_to: "staff-id",
+    brand_id: "brand-id",
+    status: "ready",
+    version: 4,
+    integration_mode: "simulated",
+    promised_at: "2026-10-16T00:00:00Z",
+    operations_summary: "Service",
+    authority_notes: [],
+    status_history: [],
+    allowedTransitions: [],
+  };
+  const data = {
+    repairOrder: row,
+    commands: [],
+    integration: { writesEnabled: true },
+    advisor: { fullName: "Advisor" },
+  };
+  const checkIn = salesDialog(
+    "components/live-repair-orders.tsx",
+    "LiveRepairOrderDetail",
+    [Date.now(), "check-in", ""],
+    transport,
+    { id: "ro-id" },
+    (path) =>
+      path?.includes("loan-cars")
+        ? { loanCars: [] }
+        : path?.includes("/staff")
+          ? { staff: [] }
+          : data,
+  );
+  await checkIn.onSubmit(
+    {
+      mileageIn: "42000",
+      fuelLevel: "half",
+      signatureConfirmed: true,
+      loanCarId: "",
+      notes: "Arrival",
+    },
+    "stable-arrival-key",
+  );
+  assert.equal(
+    calls[0].url,
+    "/api/backend/service/repair-orders/ro-id/actions/check-in",
+  );
+  assert.equal(calls[0].init.headers["Idempotency-Key"], "stable-arrival-key");
+  assert.deepEqual(JSON.parse(calls[0].init.body), {
+    siteId: "site-id",
+    version: 4,
+    mileageIn: 42000,
+    fuelLevel: "half",
+    signatureConfirmed: true,
+    loanCarId: "",
+    notes: "Arrival",
+  });
+  const collect = salesDialog(
+    "components/live-repair-orders.tsx",
+    "LiveRepairOrderDetail",
+    [Date.now(), "collect", ""],
+    transport,
+    { id: "ro-id" },
+    data,
+  );
+  await collect.onSubmit(
+    { keysReturned: true, loanReturned: true, notes: "Customer collected" },
+    "stable-collection-key",
+  );
+  const body = JSON.parse(calls[1].init.body);
+  assert.equal(body.version, 4);
+  assert.equal(body.keysReturned, true);
+  assert.ok(!("paymentStatus" in body));
+  assert.ok(!("invoiced_at" in body));
+});
+
+test("RO customer update saves a linked draft and performs no send", async () => {
+  const calls = [];
+  const transport = client(
+    async (url, init) => {
+      calls.push({ url, init });
+      return Response.json({});
+    },
+    { access_token: "test-token" },
+  );
+  const row = {
+    id: "ro-id",
+    number: "SIM-RO",
+    customer_id: "customer-id",
+    appointment_id: "appointment-id",
+    vehicle: "Test",
+    assigned_to: "staff-id",
+    status: "ready",
+    version: 1,
+    promised_at: "2026-10-16T00:00:00Z",
+    authority_notes: [],
+    status_history: [],
+    allowedTransitions: [],
+  };
+  const dialog = salesDialog(
+    "components/live-repair-orders.tsx",
+    "LiveRepairOrderDetail",
+    [Date.now(), "message", ""],
+    transport,
+    { id: "ro-id" },
+    {
+      repairOrder: row,
+      commands: [],
+      integration: { writesEnabled: true },
+      advisor: { fullName: "Advisor" },
+    },
+  );
+  await dialog.onSubmit(
+    { channel: "sms", subject: "Update", body: "Review before sending" },
+    "stable-draft-key",
+  );
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, "/api/backend/customers/customer-id/messages");
+  assert.equal(JSON.parse(calls[0].init.body).repairOrderId, "ro-id");
+  assert.equal(JSON.parse(calls[0].init.body).appointmentId, "appointment-id");
+});
+
 test("Workshop forms send typed hours, resource versions and safe retry keys", async () => {
   const calls = [];
-  const transport = client(async (url, init) => { calls.push({ url, init }); return Response.json({}); }, { access_token: "test-token" });
-  const create = salesDialog("components/live-service-diary.tsx", "LiveServiceDiary", ["", "", "60", 0, "new"], transport, { onBook: () => {} });
-  const values = { name: "Bay one", days: "1,2,3,4,5", openMinute: "480", closeMinute: "1020" };
+  const transport = client(
+    async (url, init) => {
+      calls.push({ url, init });
+      return Response.json({});
+    },
+    { access_token: "test-token" },
+  );
+  const create = salesDialog(
+    "components/live-service-diary.tsx",
+    "LiveServiceDiary",
+    ["", "", "60", 0, "new"],
+    transport,
+    { onBook: () => {} },
+  );
+  const values = {
+    name: "Bay one",
+    days: "1,2,3,4,5",
+    openMinute: "480",
+    closeMinute: "1020",
+  };
   await create.onSubmit(values, "stable-resource-key");
   assert.equal(calls[0].url, "/api/backend/service/resources");
   assert.equal(calls[0].init.headers["Idempotency-Key"], "stable-resource-key");
-  assert.deepEqual(JSON.parse(calls[0].init.body), { siteId: "site-id", name: "Bay one", days: [1,2,3,4,5], openMinute: 480, closeMinute: 1020 });
-  const row = { id: "bay-id", name: values.name, days: [1,2,3,4,5], open_minute: 480, close_minute: 1020, active: true, version: 3 };
-  const edit = salesDialog("components/live-service-diary.tsx", "LiveServiceDiary", ["", "", "60", 0, row], transport, { onBook: () => {} });
+  assert.deepEqual(JSON.parse(calls[0].init.body), {
+    siteId: "site-id",
+    name: "Bay one",
+    days: [1, 2, 3, 4, 5],
+    openMinute: 480,
+    closeMinute: 1020,
+  });
+  const row = {
+    id: "bay-id",
+    name: values.name,
+    days: [1, 2, 3, 4, 5],
+    open_minute: 480,
+    close_minute: 1020,
+    active: true,
+    version: 3,
+  };
+  const edit = salesDialog(
+    "components/live-service-diary.tsx",
+    "LiveServiceDiary",
+    ["", "", "60", 0, row],
+    transport,
+    { onBook: () => {} },
+  );
   await edit.onSubmit({ ...values, active: false });
   assert.equal(calls[1].init.method, "PATCH");
   assert.equal(JSON.parse(calls[1].init.body).version, 3);
   assert.equal(JSON.parse(calls[1].init.body).active, false);
 });
 
-
 test("Service appointment forms preserve booking times, versions and explicit outcomes", async () => {
   const calls = [];
-  const transport = client(async (url, init) => { calls.push({ url, init }); return Response.json({}); }, { access_token: "test-token" });
-  const booking = salesDialog("components/live-service-appointments.tsx", "LiveServiceAppointments", ["booked", 0, { kind: "new" }], transport);
-  const values = { customerId: "customer-id", brandId: "brand-id", resourceId: "bay-id", title: "Maintenance", vehicle: "Kia TEST-123", notes: "",
-    startsAt: "2026-10-20T10:00", endsAt: "2026-10-20T11:00" };
+  const transport = client(
+    async (url, init) => {
+      calls.push({ url, init });
+      return Response.json({});
+    },
+    { access_token: "test-token" },
+  );
+  const booking = salesDialog(
+    "components/live-service-appointments.tsx",
+    "LiveServiceAppointments",
+    ["booked", 0, { kind: "new" }],
+    transport,
+  );
+  const values = {
+    customerId: "customer-id",
+    brandId: "brand-id",
+    resourceId: "bay-id",
+    title: "Maintenance",
+    vehicle: "Kia TEST-123",
+    notes: "",
+    startsAt: "2026-10-20T10:00",
+    endsAt: "2026-10-20T11:00",
+  };
   await booking.onSubmit(values, "stable-booking-key");
   assert.equal(calls[0].url, "/api/backend/service/appointments");
   assert.equal(calls[0].init.headers["Idempotency-Key"], "stable-booking-key");
-  assert.equal(JSON.parse(calls[0].init.body).startsAt, new Date(values.startsAt).toISOString());
+  assert.equal(
+    JSON.parse(calls[0].init.body).startsAt,
+    new Date(values.startsAt).toISOString(),
+  );
   assert.equal(JSON.parse(calls[0].init.body).resourceId, "bay-id");
-  const row = { id: "appointment-id", resource_id: "bay-id", version: 3, title: values.title, vehicle: values.vehicle, notes: "", status: "booked",
-    starts_at: "2026-10-20T10:00", ends_at: "2026-10-20T11:00" };
-  const edit = salesDialog("components/live-service-appointments.tsx", "LiveServiceAppointments", ["booked", 0, { kind: "edit", row }], transport);
+  const row = {
+    id: "appointment-id",
+    resource_id: "bay-id",
+    version: 3,
+    title: values.title,
+    vehicle: values.vehicle,
+    notes: "",
+    status: "booked",
+    starts_at: "2026-10-20T10:00",
+    ends_at: "2026-10-20T11:00",
+  };
+  const edit = salesDialog(
+    "components/live-service-appointments.tsx",
+    "LiveServiceAppointments",
+    ["booked", 0, { kind: "edit", row }],
+    transport,
+  );
   await edit.onSubmit(values);
   assert.equal(calls[1].init.method, "PATCH");
   assert.equal(JSON.parse(calls[1].init.body).version, 3);
-  assert.equal(Object.hasOwn(JSON.parse(calls[1].init.body), "startsAt"), false, "Unchanged schedule should preserve confirmation");
-  const outcome = salesDialog("components/live-service-appointments.tsx", "LiveServiceAppointments", ["booked", 0, { kind: "status", row }], transport);
-  await outcome.onSubmit({ status: "cancelled", outcomeNote: "Customer changed plans" });
-  assert.deepEqual(JSON.parse(calls[2].init.body), { siteId: "site-id", version: 3, status: "cancelled", outcomeNote: "Customer changed plans" });
+  assert.equal(
+    Object.hasOwn(JSON.parse(calls[1].init.body), "startsAt"),
+    false,
+    "Unchanged schedule should preserve confirmation",
+  );
+  const outcome = salesDialog(
+    "components/live-service-appointments.tsx",
+    "LiveServiceAppointments",
+    ["booked", 0, { kind: "status", row }],
+    transport,
+  );
+  await outcome.onSubmit({
+    status: "cancelled",
+    outcomeNote: "Customer changed plans",
+  });
+  assert.deepEqual(JSON.parse(calls[2].init.body), {
+    siteId: "site-id",
+    version: 3,
+    status: "cancelled",
+    outcomeNote: "Customer changed plans",
+  });
 });
-
 
 test("enquiry and pipeline forms send JSON objects through the authenticated transport with their version and retry key", async () => {
   const calls = [];
