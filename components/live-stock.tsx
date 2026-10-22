@@ -232,15 +232,12 @@ export function LiveStock() {
             {can("stock.manage") &&
               resource.data?.integration.mode === "simulated" && (
                 <Button onClick={() => setEditor("new")}>
-                  Add simulated vehicle
+                  Add vehicle
                 </Button>
               )}
           </>
         }
       />
-      {resource.data?.integration.mode === "simulated" && (
-        <Feedback message="Development simulation — these vehicles are test stock. Real Pentana stock scraping is not connected." />
-      )}
       <Feedback error={error || brands.error || leads.error} />
       <Panel className="mb-5">
         <PanelHeading

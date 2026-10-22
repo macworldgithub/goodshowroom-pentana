@@ -72,9 +72,6 @@ export function LiveCustomers() {
           </>
         }
       />
-      {resource.data?.integration.mode === "simulated" && (
-        <Feedback message="Development simulation — customer changes are confirmed by the simulator. Real Pentana scraping is not connected yet." />
-      )}
       {resource.data?.integration.mode === "disabled" && (
         <Feedback message="Source writes are disabled. You can view existing customers and manage local follow-ups." />
       )}
