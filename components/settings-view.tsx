@@ -50,40 +50,19 @@ const users: Array<{
 ];
 
 const permissions = [
-  { label: "View customer records", Admin: true, Sales: true, Service: true },
-  {
-    label: "Manage leads and pipeline",
-    Admin: true,
-    Sales: true,
-    Service: false,
-  },
-  {
-    label: "Manage service coordination",
-    Admin: true,
-    Sales: false,
-    Service: true,
-  },
-  {
-    label: "Match and reserve stock",
-    Admin: true,
-    Sales: true,
-    Service: false,
-  },
-  { label: "Manage shared handovers", Admin: true, Sales: true, Service: true },
+  { label: "View customer 360 & shared thread", Admin: true, Sales: true, Service: true },
+  { label: "Send customer SMS & Email from thread", Admin: true, Sales: true, Service: true },
+  { label: "Manage sales enquiries & pipeline", Admin: true, Sales: true, Service: false },
+  { label: "Match and reserve vehicle stock", Admin: true, Sales: true, Service: false },
+  { label: "Service booking diary & workshop board", Admin: true, Sales: false, Service: true },
+  { label: "Check-in, loan car dispatch & collection", Admin: true, Sales: false, Service: true },
+  { label: "Handover lane (PDI & first service)", Admin: true, Sales: true, Service: true },
+  { label: "Approve commercial deals (Sales Manager)", Admin: true, Sales: true, Service: false },
+  { label: "Manage workshop capacity & bays (Controller)", Admin: true, Sales: false, Service: true },
   { label: "Run and review CSV imports", Admin: true, Sales: false, Service: false },
-  {
-    label: "Review and retry sync failures",
-    Admin: true,
-    Sales: false,
-    Service: false,
-  },
-  {
-    label: "Manage users and permissions",
-    Admin: true,
-    Sales: false,
-    Service: false,
-  },
-  { label: "View relevant reports", Admin: true, Sales: true, Service: true },
+  { label: "Review and retry Pentana sync failures", Admin: true, Sales: false, Service: false },
+  { label: "Manage users, roles and staff access", Admin: true, Sales: false, Service: false },
+  { label: "View operational & cross-site reports", Admin: true, Sales: true, Service: true },
 ] satisfies Array<{ label: string } & Record<UserRole, boolean>>;
 
 export function SettingsView() {

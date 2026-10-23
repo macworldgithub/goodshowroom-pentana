@@ -23,9 +23,13 @@ const extras = [
   "tasks.assign",
   "sales.view_team",
   "sales.assign_leads",
+  "sales.approve_deals",
   "service.view_team",
   "service.assign_work",
-  "reports.read", "reports.view_group",
+  "service.resources_manage",
+  "deliveries.confirm_payment",
+  "reports.read",
+  "reports.view_group",
 ];
 type Brand = { id: string; name: string };
 type Audit = {
@@ -92,10 +96,11 @@ export function LiveSettings() {
       label: "Role",
       type: "select",
       value: member?.role ?? "SALES",
-      options: ["ADMIN", "SALES", "SERVICE"].map((value) => ({
-        value,
-        label: value,
-      })),
+      options: [
+        { value: "SALES", label: "SALES — Sales Consultant, BDC & Sales Manager" },
+        { value: "SERVICE", label: "SERVICE — Service Advisor, Workshop Controller & Recovery" },
+        { value: "ADMIN", label: "ADMIN — Dealer Principal, General Manager & Executive" },
+      ],
     },
     {
       name: "siteId",
