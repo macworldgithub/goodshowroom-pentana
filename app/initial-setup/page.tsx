@@ -5,7 +5,7 @@ import { AuthFrame } from "@/components/auth-frame";
 import { Feedback } from "@/components/live-common";
 import { Button, FormField, Icon, inputClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/backend";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth/client";
 export default function Page() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -26,7 +26,7 @@ export default function Page() {
       };
       await api("auth/initial-user", { method: "POST", public: true, body: values });
       setCreated(true);
-      const { error } = await createClient().auth.signInWithPassword({ email: values.email, password: values.password });
+      const { error } = await authClient.signInWithPassword({ email: values.email, password: values.password });
       if (error) throw error;
       router.replace("/dashboard");
       router.refresh();

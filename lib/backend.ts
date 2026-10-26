@@ -1,4 +1,4 @@
-import { createClient } from "./supabase/client";
+import { authClient } from "@/lib/auth/client";
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -15,11 +15,10 @@ type Options = {
   public?: boolean;
 };
 export async function api<T>(path: string, options: Options = {}): Promise<T> {
-  const client = createClient();
   let token: string | undefined;
   if (!options.public) {
-    const { data, error } = await client.auth.getSession();
-    if (error || !data.session) throw new ApiError("Sign in to continue", 401);
+    const { data } = authClient.getSession();
+    if (!data.session) throw new ApiError("Sign in to continue", 401);
     token = data.session.access_token;
   }
   const send = () =>
@@ -38,7 +37,7 @@ export async function api<T>(path: string, options: Options = {}): Promise<T> {
     });
   let response = await send();
   if (response.status === 401 && !options.public) {
-    const { data, error } = await client.auth.refreshSession();
+    const { data, error } = await authClient.refreshSession();
     if (!error && data.session) {
       token = data.session.access_token;
       response = await send();

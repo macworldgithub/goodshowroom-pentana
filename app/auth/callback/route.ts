@@ -1,22 +1,18 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 
+/**
+ * Auth callback is no longer used — the old Supabase OAuth code exchange has been
+ * replaced by direct JWT login via /api/backend/auth/login.
+ * This route is kept to gracefully redirect any stale links.
+ */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
-  if (!code)
-    return NextResponse.redirect(new URL("/login?callback=invalid", origin));
-  const { error } = await (
-    await createClient()
-  ).auth.exchangeCodeForSession(code);
-  if (error)
-    return NextResponse.redirect(new URL("/login?callback=expired", origin));
-  return NextResponse.redirect(
-    new URL(
-      searchParams.get("next") === "/set-password"
-        ? "/set-password"
-        : "/dashboard",
-      origin,
-    ),
-  );
+  const next = searchParams.get("next");
+  if (next === "/set-password") {
+    const token = searchParams.get("token") ?? "";
+    return NextResponse.redirect(
+      new URL(`/set-password${token ? `?token=${encodeURIComponent(token)}` : ""}`, origin),
+    );
+  }
+  return NextResponse.redirect(new URL("/login", origin));
 }

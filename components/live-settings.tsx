@@ -434,7 +434,7 @@ export function LiveSettings() {
             ["user", "invite", "membership"].includes(selected.action)
               ? "Sales and Service require a site. Admin access covers the organisation. Brand restrictions must match the selected site."
               : selected.action === "send"
-                ? "Invitation emails use Supabase Auth delivery, separately from customer SMTP."
+                ? "Invitation emails are sent via the configured SMTP server."
                 : undefined
           }
           fields={fields}
@@ -524,7 +524,7 @@ export function LiveSettings() {
               });
             setNotice(
               action === "send"
-                ? "Invitation email submitted to Supabase."
+                ? "Invitation email sent."
                 : "Changes saved.",
             );
             await changed();

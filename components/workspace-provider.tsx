@@ -11,7 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { api, ApiError, errorMessage } from "@/lib/backend";
 import type { Context, Site } from "@/lib/backend-types";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth/client";
 import type { UserRole } from "@/lib/roles";
 import { AccessWelcome } from "./workspace-welcome";
 import { Icon } from "./ui";
@@ -70,7 +70,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     void Promise.resolve().then(() => {
       if (!active) return;
       try {
-        subscription = createClient().auth.onAuthStateChange((event) => {
+        subscription = authClient.onAuthStateChange((event) => {
           if (event === "SIGNED_OUT") {
             requests.current++;
             setContext(null);
@@ -93,7 +93,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }, [refresh, router]);
   async function signOut() {
     generation.current++;
-    await createClient().auth.signOut();
+    await authClient.signOut();
     setContext(null);
     router.replace("/login");
     router.refresh();

@@ -3,10 +3,17 @@ async function forward(request: Request, context: RouteContext) {
   const { path } = await context.params;
   if (!path.length || path.some((part) => !/^[a-zA-Z0-9_-]+$/.test(part)))
     return Response.json({ message: "Invalid API path" }, { status: 400 });
-  const publicSetup =
-    request.method === "POST" && path.join("/") === "auth/initial-user";
+  const publicPaths = [
+    "auth/initial-user",
+    "auth/login",
+    "auth/refresh",
+    "auth/forgot-password",
+    "auth/reset-password",
+    "auth/accept-invitation",
+  ];
+  const isPublic = request.method === "POST" && publicPaths.includes(path.join("/"));
   const token = request.headers.get("authorization");
-  if (!publicSetup && !token?.startsWith("Bearer "))
+  if (!isPublic && !token?.startsWith("Bearer "))
     return Response.json({ message: "Sign in to continue" }, { status: 401 });
   const incomingOrigin = request.headers.get("origin");
   if (

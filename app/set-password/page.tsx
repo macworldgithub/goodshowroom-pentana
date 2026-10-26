@@ -1,36 +1,27 @@
 "use client";
 import { useEffect, useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { authClient } from "@/lib/auth/client";
 import { errorMessage } from "@/lib/backend";
 import { Button, FormField, inputClass } from "@/components/ui";
 import { Feedback } from "@/components/live-common";
 import { AuthFrame } from "@/components/auth-frame";
 export default function Page() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token") ?? "";
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
-    let active = true;
-    Promise.resolve()
-      .then(() => createClient().auth.getUser())
-      .then(({ data, error }) => {
-        if (active) {
-          setReady(!!data.user && !error);
-          if (!data.user || error)
-            setError(
-              "Open a valid recovery or invitation link before setting your password.",
-            );
-        }
-      })
-      .catch((cause) => {
-        if (active) setError(errorMessage(cause));
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+    if (token) {
+      setReady(true);
+    } else {
+      setError(
+        "Open a valid recovery or invitation link before setting your password.",
+      );
+    }
+  }, [token]);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -40,7 +31,7 @@ export default function Page() {
     setBusy(true);
     setError("");
     try {
-      const { error } = await createClient().auth.updateUser({ password });
+      const { error } = await authClient.updateUser({ password, token });
       if (error) throw error;
       router.replace("/dashboard");
       router.refresh();

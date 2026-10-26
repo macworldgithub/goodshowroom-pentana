@@ -1,6 +1,6 @@
 "use client";
 import { useState, type FormEvent } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth/client";
 import { errorMessage } from "@/lib/backend";
 import { Button, FormField, inputClass } from "@/components/ui";
 import { Feedback } from "@/components/live-common";
@@ -15,9 +15,8 @@ export default function Page() {
     setBusy(true);
     setError("");
     try {
-      const { error } = await createClient().auth.resetPasswordForEmail(
+      const { error } = await authClient.resetPasswordForEmail(
         String(form.get("email")).trim(),
-        { redirectTo: `${location.origin}/auth/callback?next=/set-password` },
       );
       if (error) throw error;
       setNotice(
@@ -30,7 +29,7 @@ export default function Page() {
     }
   }
   return (
-    <AuthFrame title="Forgot your password?" description="Enter your work email and we’ll send you a link to reset your password." icon="mail" eyebrow="Password recovery">
+    <AuthFrame title="Forgot your password?" description="Enter your work email and we'll send you a link to reset your password." icon="mail" eyebrow="Password recovery">
         <form onSubmit={submit} className="space-y-5" aria-busy={busy}>
           <FormField label="Work email">
             <input name="email" type="email" autoComplete="email" placeholder="you@dealership.com" required className={inputClass} />
@@ -40,7 +39,7 @@ export default function Page() {
             {busy ? "Sending recovery link…" : notice ? "Recovery link requested" : "Send recovery link"}
           </Button>
         </form>
-        <p className="mt-6 border-t border-slate-100 pt-5 text-xs leading-5 text-slate-500">Check your spam folder if the email doesn’t arrive. For further help, contact your dealership administrator.</p>
+        <p className="mt-6 border-t border-slate-100 pt-5 text-xs leading-5 text-slate-500">Check your spam folder if the email doesn't arrive. For further help, contact your dealership administrator.</p>
     </AuthFrame>
   );
 }

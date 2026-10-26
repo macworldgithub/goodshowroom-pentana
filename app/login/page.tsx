@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth/client";
 import { roles, type UserRole } from "@/lib/roles";
 import { Icon, inputClass } from "@/components/ui";
 import { AuthFrame } from "@/components/auth-frame";
@@ -29,7 +29,7 @@ export default function LoginPage() {
     setPending(true);
     setError("");
     try {
-      const { error: authError } = await createClient().auth.signInWithPassword(
+      const { error: authError } = await authClient.signInWithPassword(
         { email, password },
       );
       if (authError) throw authError;
