@@ -132,12 +132,12 @@ export default function LoginPage() {
               <Icon name="chevron" className="h-4 w-4" />
             </button>
           </form>
-          <div className="mt-4 flex flex-wrap justify-between gap-3 text-sm"><Link className="font-semibold text-brand hover:underline" href="/forgot-password">Forgot password?</Link><Link className="text-slate-500 hover:text-slate-900 hover:underline" href="/initial-setup">First-time administrator setup</Link></div>
+          <div className="mt-4 flex flex-wrap justify-between gap-3 text-sm"><Link className="font-semibold text-brand hover:underline" href="/forgot-password">Forgot password?</Link></div>
           <div className="mt-6 flex flex-col gap-2 border-t border-slate-100 pt-5 text-[11px] font-semibold text-slate-500 min-[440px]:flex-row min-[440px]:items-center min-[440px]:justify-between">
             <span className="flex items-start gap-2">
               <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
               Access is verified after sign in
-            </span>
+            </span>0
             <span>One customer · One thread</span>
           </div>
     </AuthFrame>
